@@ -1,0 +1,44 @@
+name: CI Checks
+
+on: [push, pull_request]
+
+jobs:
+  lint-and-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- Node / Vue (frontend) ---
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+        working-directory: src/frontend
+      - run: npm run lint
+        working-directory: src/frontend
+      - run: npm audit --audit-level=high
+        working-directory: src/frontend
+
+      # --- Python (server) ---
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - run: pip install ruff
+      - run: ruff check src/server/app
+      - run: pip install -r src/server/requirements.txt
+
+      # --- Python dep audit ---
+      - uses: pypa/gh-action-pip-audit@v1
+        with:
+          inputs: src/server/requirements.txt
+
+      # --- Dependency review (PRs only) ---
+      - uses: actions/dependency-review-action@v4
+
+      # --- Secret scanning (catches .env leaks) ---
+      - uses: trufflesecurity/trufflehog@main
+        with:
+          scan-args: --only-verified
+
+      # --- SQL linting ---
+      - run: pip install sqlfluff && sqlfluff lint tables.sql
