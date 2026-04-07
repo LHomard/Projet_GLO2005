@@ -28,7 +28,7 @@ jobs:
       - run: pip install -r src/server/requirements.txt
 
       # --- Python dep audit ---
-      - uses: pypa/gh-action-pip-audit@v1
+      - - uses: pypa/gh-action-pip-audit@v1.1.0
         with:
           inputs: src/server/requirements.txt
 
