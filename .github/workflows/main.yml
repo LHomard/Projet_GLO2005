@@ -13,11 +13,11 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
-        working-directory: src/frontend
+        working-directory: src/server/frontend
       - run: npm run lint
-        working-directory: src/frontend
+        working-directory: src/server/frontend
       - run: npm audit --audit-level=high
-        working-directory: src/frontend
+        working-directory: src/server/frontend
 
       # --- Python (server) ---
       - uses: actions/setup-python@v5
