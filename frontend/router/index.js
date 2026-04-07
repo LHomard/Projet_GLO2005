@@ -8,6 +8,7 @@ import Chat from '../pages/Chat.vue'
 const routes = [
   {
     path: '/',
+    alias: '/home',
     name: 'Home',
     component: Home,
   },

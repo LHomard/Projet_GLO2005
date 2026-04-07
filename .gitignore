@@ -27,3 +27,8 @@ backup.sql
 # local scratch work
 scratch.sql
 local_queries/
+
+# JavaScript / Frontend (The ** ensures it finds it in subfolders)
+**/node_modules/
+dist/
+.eslintcache
