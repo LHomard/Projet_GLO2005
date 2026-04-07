@@ -1,5 +1,3 @@
-import requests, time
-from flask import Flask, jsonify, request
 from flask_cors import CORS
 from .extensions import close_db
 
@@ -9,6 +7,7 @@ def create_app():
     app = Flask(__name__)
 
     CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
+
     app.teardown_appcontext(close_db)
 
     _sets_cache = {"data": None, "time": 0}
@@ -82,3 +81,4 @@ def create_app():
         return jsonify(sets)
 
     return app
+
