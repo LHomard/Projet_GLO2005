@@ -1,20 +1,32 @@
 version: "3.9"
 
 services:
-  web:
-    build: .
-    ports:
-      - "5000:5000"
-    volumes:
-      - .:/app
-    environment:
-      - FLASK_ENV=development
-      - DB_HOST=db
-      - DB_USER=user
-      - DB_PASSWORD=1234
-      - DB_NAME=MGT_db
-    depends_on:
-      - db
+  backend:
+      build:
+        context: ./backend
+        dockerfile: Dockerfile
+      ports:
+        - "5000:5000"
+      volumes:
+        - ./backend:/app
+      environment:
+        - FLASK_ENV=development
+        - DB_HOST=db
+        - DB_USER=user
+        - DB_PASSWORD=1234
+        - DB_NAME=MGT_db
+      depends_on:
+        - db
+
+  frontend:
+      build:
+        context: ./frontend
+        dockerfile: Dockerfile
+      ports:
+        - "5173:5173"
+      volumes:
+        - ./frontend:/app
+        - /app/node_modules
 
   db:
     image: mysql:8.0
@@ -25,7 +37,7 @@ services:
       MYSQL_USER: user
       MYSQL_PASSWORD: 1234
     ports:
-      - "3307:3306"
+      - "3308:3306"
     volumes:
       - mysql_data:/var/lib/mysql
 

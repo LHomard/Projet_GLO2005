@@ -2,6 +2,8 @@ from flask import Flask
 from flask_cors import CORS
 from .extensions import close_db
 
+print("INIT LOADED")
+
 def create_app():
     app = Flask(__name__)
 
