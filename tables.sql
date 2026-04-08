@@ -1,53 +1,102 @@
-USE glo2005_database;
+USE MGT_db;
 
-CREATE TABLE IF NOT EXISTS cartes  (
-    id INT PRIMARY KEY,
-    name VARCHAR(50) NOT NULL,
-    color JSON,
-    type_line VARCHAR(50),
+DROP TABLE Card_oracle;
+DROP TABLE Sets;
+DROP TABLE Card_printing;
+DROP TABLE Colors;
+DROP TABLE Card_color;
+DROP TABLE Formats;
+DROP TABLE Legality;
+DROP TABLE Players;
+DROP TABLE Decks;
+DROP TABLE Deck_composition;
+
+
+-- Nouvelles Tables
+CREATE TABLE IF NOT EXISTS Card_oracle (
+    id_oracle INT AUTO_INCREMENT PRIMARY KEY,
+    name varchar(50) NOT NULL,
     oracle_text TEXT,
-    keyword JSON,
-    color_identity JSON,
+    mana_cost VARCHAR(50),
     cmc INT,
-    Mana_cost VARCHAR(50),
-    price INT
+    power VARCHAR(10),
+    toughness VARCHAR(10)
 );
 
-CREATE TABLE IF NOT EXISTS Extension  (
-    id_extension INT PRIMARY KEY,
-    name VARCHAR(200) NOT NULL,
+CREATE TABLE IF NOT EXISTS Sets (
+    id_sets INT  AUTO_INCREMENT PRIMARY KEY,
+    set_name VARCHAR(200) NOT NULL,
+    set_code CHAR(3),
     date_sortie DATE
 );
 
-CREATE TABLE IF NOT EXISTS rules  (
-    id_rules INT PRIMARY KEY,
-    description TEXT NOT NULL
+CREATE TABLE IF NOT EXISTS Card_printing (
+    id_printing INT  AUTO_INCREMENT PRIMARY KEY,
+    id_oracle INT REFERENCES Card_oracle(id_oracle) ON DELETE CASCADE,
+    id_extension INT REFERENCES Sets(id_sets),
+    rarity VARCHAR(20),
+    artist VARCHAR(100),
+    image_url VARCHAR (300),
+    price DECIMAL(7, 2)
 );
 
-CREATE TABLE IF NOT EXISTS Deck  (
-    id_deck INT PRIMARY KEY,
-    date_creation date NOT NULL,
-    prix_total INT,
-    card_quantity INT,
-    cout_par_pillier JSON
+
+CREATE TABLE IF NOT EXISTS Colors (
+    id_color INT  AUTO_INCREMENT PRIMARY KEY,
+    color_name VARCHAR(20) NOT NULL UNIQUE,
+    color_symbol CHAR(1)
 );
 
-CREATE TABLE IF NOT EXISTS Format  (
-    id_format INT PRIMARY KEY,
-    card_quantity INT NOT NULL,
-    name TEXT,
-    card_ban JSON
+
+CREATE TABLE IF NOT EXISTS Card_color (
+    id_oracle INT REFERENCES Card_oracle(id_oracle) ON DELETE CASCADE,
+    id_color INT REFERENCES Colors(id_color),
+    PRIMARY KEY (id_oracle, id_color)
 );
 
-CREATE TABLE IF NOT EXISTS User  (
-    id_utilisateur INT PRIMARY KEY,
-    date_inscription DATE NOT NULL,
-    username TEXT,
-    password TEXT,
-    email TEXT
+
+CREATE TABLE IF NOT EXISTS Formats (
+    id_format INT AUTO_INCREMENT PRIMARY KEY,
+    format_name VARCHAR(50) NOT NULL UNIQUE,
+    max_card_quantity INT
+);
+
+
+CREATE TABLE IF NOT EXISTS Legality (
+    id_oracle INT REFERENCES Card_oracle(id_oracle) ON DELETE CASCADE,
+    id_format INT REFERENCES Formats(id_format),
+    status VARCHAR(20) DEFAULT 'Legal',
+    PRIMARY KEY (id_oracle, id_format)
+);
+
+
+CREATE TABLE IF NOT EXISTS Players (
+    id_players INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR (255) NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    register_date DATE DEFAULT (CURRENT_DATE)
+);
+
+
+CREATE TABLE IF NOT EXISTS Decks (
+    id_deck INT  AUTO_INCREMENT PRIMARY KEY,
+    id_user INT REFERENCES Players(id_players),
+    id_format INT REFERENCES Formats(id_format),
+    deck_name VARCHAR(100) NOT NULL,
+    deck_image_url VARCHAR (300),
+    deck_description TEXT,
+    date_creation date NOT NULL
+);
+
+
+CREATE TABLE IF NOT EXISTS Deck_composition (
+    id_deck INT REFERENCES Decks(id_deck) ON DELETE CASCADE,
+    id_printing INT REFERENCES Card_printing(id_printing),
+    quantity INT,
+    pillar_cost INT,
+    PRIMARY KEY (id_deck, id_printing)
 );
 
 SHOW TABLES;
-
-SELECT * FROM cartes;
 
