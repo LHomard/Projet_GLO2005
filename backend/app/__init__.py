@@ -5,6 +5,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from .extensions import close_db
 
+
 print("INIT LOADED")
 
 def create_app():
