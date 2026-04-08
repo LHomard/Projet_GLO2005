@@ -37,7 +37,13 @@ def create_app():
     @app.route('/api/cards')
     def get_cards():
         page = request.args.get('page', 1)
-        res = requests.get(f'https://api.scryfall.com/cards/search?q=*&order=name&page={page}&lang=en')
+        search_query = request.args.get('search', '').strip()
+        q = search_query if search_query else '*'
+        res = requests.get(f'https://api.scryfall.com/cards/search?q={search_query}&order=name&page={page}&lang=en')
+
+        if res.status_code != 200:
+            return jsonify({'cards': [], 'has_more': False})
+
         data = res.json()
         cards = [{
             'id': card['id'],
