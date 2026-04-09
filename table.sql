@@ -8,13 +8,16 @@ CREATE TABLE IF NOT EXISTS Card_oracle (
     mana_cost VARCHAR(50),
     cmc INT,
     power VARCHAR(10),
-    toughness VARCHAR(10)
+    toughness VARCHAR(10),
+    type_line TEXT
 );
 
 CREATE TABLE IF NOT EXISTS Sets (
-    id_set INT  AUTO_INCREMENT PRIMARY KEY,
+    id_set INT AUTO_INCREMENT PRIMARY KEY,
+    card_count INT,
     set_name VARCHAR(200) NOT NULL,
     set_code TEXT,
+    icon_url VARCHAR(300),
     release_date DATE
 );
 
