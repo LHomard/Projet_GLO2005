@@ -39,6 +39,10 @@ def create_app():
         page = request.args.get('page', 1)
         res = requests.get(f'https://api.scryfall.com/cards/search?q=*&order=name&page={page}&lang=en')
         data = res.json()
+
+        if 'data' not in data:
+            return jsonify({"error": "Unexpected API response", "raw": data}), 500
+
         cards = [{
             'id': card['id'],
             'name': card['name'],

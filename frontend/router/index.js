@@ -19,7 +19,7 @@ const routes = [
   },
   {
     path: '/decks',
-    name: 'Decks',
+    name: 'Deck building',
     component: Decks,
   },
   {
