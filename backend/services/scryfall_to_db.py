@@ -55,7 +55,8 @@ def populate_card_oracle(cards):
             card.get('cmc', 0),
             card.get('oracle_text'),
             card.get('power'),
-            card.get('toughness')
+            card.get('toughness'),
+            card.get('type_line')
         ))
 
     connection = get_connection()
@@ -65,8 +66,8 @@ def populate_card_oracle(cards):
             cursor.execute("SELECT COUNT(*) FROM Card_oracle")
             if cursor.fetchone()[0] == 0:
                 print(f"Insertion of {len(to_insert)} cards...")
-                sql = """INSERT INTO Card_oracle (name, mana_cost, cmc, oracle_text, power, toughness)
-                         VALUES (%s, %s, %s, %s, %s, %s)"""
+                sql = """INSERT INTO Card_oracle (name, mana_cost, cmc, oracle_text, power, toughness, type_line)
+                         VALUES (%s, %s, %s, %s, %s, %s, %s)"""
 
                 # Separate in chunks of 1000 elements to not overcharge the buffer
                 for i in range(0, len(to_insert), 1000):
@@ -86,7 +87,7 @@ def populate_sets():
     sets_data = response.get('data', [])
 
     to_insert = [
-        (s.get('code').upper(), s.get('name'), s.get('released_at'))
+        (s.get('code').upper(), s.get('name'), s.get('released_at'), s.get('icon_svg_uri'))
         for s in sets_data
     ]
 
@@ -96,7 +97,7 @@ def populate_sets():
             cursor.execute("SELECT COUNT(*) FROM Sets")
             if cursor.fetchone()[0] == 0:
                 print(f"Insertion de {len(to_insert)} extensions...")
-                sql = "INSERT INTO Sets (set_code, set_name, release_date) VALUES (%s, %s, %s)"
+                sql = "INSERT INTO Sets (set_code, set_name, release_date, icon_url) VALUES (%s, %s, %s, %s)"
                 cursor.executemany(sql, to_insert)
                 conn.commit()
                 print("Table sets populated !")
