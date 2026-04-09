@@ -77,8 +77,18 @@ onUnmounted(() => {
     flex-shrink: 0;
   }
 
-  /* Custom Scrollbar Styles */
-  .carousel::-webkit-scrollbar { height: 15px; }
-  .carousel::-webkit-scrollbar-track { background-color: #C2D2E4; }
-  .carousel::-webkit-scrollbar-thumb { background-color: #0A4C95; }
+  .carousel::-webkit-scrollbar {
+    height: 15px;
+    width: 30px;
+  }
+  .carousel::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .carousel::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 999px;
+  }
+  .carousel::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
 </style>
