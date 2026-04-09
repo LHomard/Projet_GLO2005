@@ -4,3 +4,4 @@ pymysql
 cryptography
 requests
 groq
+dotenv

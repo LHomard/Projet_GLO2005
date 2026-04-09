@@ -3,7 +3,7 @@ import pymysql
 from app import create_app
 
 app = create_app()
-#
+
 #def get_db_connection():
 #    return pymysql.connect(
  #       host=os.getenv("DB_HOST"),
