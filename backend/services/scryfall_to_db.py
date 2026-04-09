@@ -87,7 +87,7 @@ def populate_sets():
     sets_data = response.get('data', [])
 
     to_insert = [
-        (s.get('code').upper(), s.get('name'), s.get('released_at'), s.get('icon_svg_uri'))
+        (s.get('code').upper(), s.get('name'), s.get('released_at'), s.get('icon_svg_uri'), s.get('card_count'))
         for s in sets_data
     ]
 
@@ -97,7 +97,7 @@ def populate_sets():
             cursor.execute("SELECT COUNT(*) FROM Sets")
             if cursor.fetchone()[0] == 0:
                 print(f"Insertion de {len(to_insert)} extensions...")
-                sql = "INSERT INTO Sets (set_code, set_name, release_date, icon_url) VALUES (%s, %s, %s, %s)"
+                sql = "INSERT INTO Sets (set_code, set_name, release_date, icon_url, card_count) VALUES (%s, %s, %s, %s, %s)"
                 cursor.executemany(sql, to_insert)
                 conn.commit()
                 print("Table sets populated !")
