@@ -1,21 +1,9 @@
 USE MGT_db;
 
-DROP TABLE Card_oracle;
-DROP TABLE Sets;
-DROP TABLE Card_printing;
-DROP TABLE Colors;
-DROP TABLE Card_color;
-DROP TABLE Formats;
-DROP TABLE Legality;
-DROP TABLE Players;
-DROP TABLE Decks;
-DROP TABLE Deck_composition;
 
-
--- Nouvelles Tables
 CREATE TABLE IF NOT EXISTS Card_oracle (
     id_oracle INT AUTO_INCREMENT PRIMARY KEY,
-    name varchar(50) NOT NULL,
+    name TEXT,
     oracle_text TEXT,
     mana_cost VARCHAR(50),
     cmc INT,
@@ -24,16 +12,16 @@ CREATE TABLE IF NOT EXISTS Card_oracle (
 );
 
 CREATE TABLE IF NOT EXISTS Sets (
-    id_sets INT  AUTO_INCREMENT PRIMARY KEY,
+    id_set INT  AUTO_INCREMENT PRIMARY KEY,
     set_name VARCHAR(200) NOT NULL,
-    set_code CHAR(3),
-    date_sortie DATE
+    set_code TEXT,
+    release_date DATE
 );
 
 CREATE TABLE IF NOT EXISTS Card_printing (
     id_printing INT  AUTO_INCREMENT PRIMARY KEY,
     id_oracle INT REFERENCES Card_oracle(id_oracle) ON DELETE CASCADE,
-    id_extension INT REFERENCES Sets(id_sets),
+    id_set INT REFERENCES Sets(id_set),
     rarity VARCHAR(20),
     artist VARCHAR(100),
     image_url VARCHAR (300),
@@ -48,7 +36,7 @@ CREATE TABLE IF NOT EXISTS Colors (
 );
 
 
-CREATE TABLE IF NOT EXISTS Card_color (
+CREATE TABLE IF NOT EXISTS Card_colors (
     id_oracle INT REFERENCES Card_oracle(id_oracle) ON DELETE CASCADE,
     id_color INT REFERENCES Colors(id_color),
     PRIMARY KEY (id_oracle, id_color)
@@ -71,7 +59,7 @@ CREATE TABLE IF NOT EXISTS Legality (
 
 
 CREATE TABLE IF NOT EXISTS Players (
-    id_players INT AUTO_INCREMENT PRIMARY KEY,
+    id_player INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR (255) NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
@@ -81,7 +69,7 @@ CREATE TABLE IF NOT EXISTS Players (
 
 CREATE TABLE IF NOT EXISTS Decks (
     id_deck INT  AUTO_INCREMENT PRIMARY KEY,
-    id_user INT REFERENCES Players(id_players),
+    id_user INT REFERENCES Players(id_player),
     id_format INT REFERENCES Formats(id_format),
     deck_name VARCHAR(100) NOT NULL,
     deck_image_url VARCHAR (300),
@@ -98,5 +86,8 @@ CREATE TABLE IF NOT EXISTS Deck_composition (
     PRIMARY KEY (id_deck, id_printing)
 );
 
-SHOW TABLES;
+CREATE TABLE IF NOT EXISTS Ai_chats (
+    id_player INT REFERENCES Players(id_player) ON DELETE CASCADE,
+    chats TEXT
+)
 

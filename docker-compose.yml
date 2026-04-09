@@ -1,33 +1,6 @@
 version: "3.9"
 
 services:
-  backend:
-      build:
-        context: ./backend
-        dockerfile: Dockerfile
-      ports:
-        - "5000:5000"
-      volumes:
-        - ./backend:/app
-      environment:
-        - FLASK_ENV=development
-        - DB_HOST=db
-        - DB_USER=user
-        - DB_PASSWORD=1234
-        - DB_NAME=MGT_db
-      depends_on:
-        - db
-
-  frontend:
-      build:
-        context: ./frontend
-        dockerfile: Dockerfile
-      ports:
-        - "5173:5173"
-      volumes:
-        - ./frontend:/app
-        - /app/node_modules
-
   db:
     image: mysql:8.0
     restart: always
@@ -42,7 +15,37 @@ services:
       - mysql_data:/var/lib/mysql
       - ./table.sql:/docker-entrypoint-initdb.d/table.sql
 
-
+  backend:
+      build:
+        context: ./backend
+        dockerfile: Dockerfile
+      ports:
+        - "5000:5000"
+      volumes:
+        - ./backend:/app
+      environment:
+        - FLASK_ENV=development
+        - DB_HOST=db
+        - DB_PORT=3306
+        - DB_USER=user
+        - DB_PASSWORD=1234
+        - DB_NAME=MGT_db
+      depends_on:
+        - db
+      command: >
+        sh -c "
+          python services/scryfall_to_db.py &&
+          flask run --host=0.0.0.0
+        "
+  frontend:
+      build:
+        context: ./frontend
+        dockerfile: Dockerfile
+      ports:
+        - "5173:5173"
+      volumes:
+        - ./frontend:/app
+        - /app/node_modules
 
 volumes:
   mysql_data:
