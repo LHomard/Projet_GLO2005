@@ -58,7 +58,7 @@
         <div v-if="cardInPlay.length > 0" class="grid grid-cols-2 sm:grid-cols-3 gap-4">
           <div
             v-for="card in cardInPlay"
-            :key="card.id"
+            :inputmode="card.id"
             @click="$emit('select-card', card)"
             class="group cursor-pointer"
           >

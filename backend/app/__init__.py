@@ -4,6 +4,7 @@ import requests
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from .extensions import close_db
+from services.ai_judges import judges_bp
 
 
 print("INIT LOADED")
@@ -12,11 +13,12 @@ def create_app():
     app = Flask(__name__)
 
     CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
-
+    app.register_blueprint(judges_bp)
     app.teardown_appcontext(close_db)
 
     _sets_cache = {"data": None, "time": 0}
     CACHE_TTL = 3600
+
 
     @app.route('/api/test-db')
     def test_db():
@@ -39,7 +41,7 @@ def create_app():
         page = request.args.get('page', 1)
         search_query = request.args.get('search', '').strip()
         q = search_query if search_query else '*'
-        res = requests.get(f'https://api.scryfall.com/cards/search?q={search_query}&order=name&page={page}&lang=en')
+        res = requests.get(f'https://api.scryfall.com/cards/search?q={q}&order=name&page={page}&lang=en')
 
         if res.status_code != 200:
             return jsonify({'cards': [], 'has_more': False})
@@ -51,6 +53,7 @@ def create_app():
             'image': card['image_uris']['normal'] if 'image_uris' in card else None,
             'type': card['type_line'],
             'colors': card.get('colors', []),
+            'oracle_text': card['oracle_text'],
         } for card in data['data'] if 'image_uris' in card]
         return jsonify({
             'cards': cards,

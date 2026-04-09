@@ -5,20 +5,23 @@
 
   const showModal = ref(false);
   const selectedCards = ref([]);
+  const emit = defineEmits(['update-cards']);
 
   const handleCardSelection = (card) => {
     selectedCards.value.push(card);
+    emit('update-cards', selectedCards.value);
     showModal.value = false;
   };
 
   const removeCard = (index) => {
     selectedCards.value.splice(index, 1);
+    emit('update-cards', selectedCards.value);
   };
 </script>
 
 <template>
   <div class="flex flex-col gap-4">
-    <div v-if="selectedCards.length > 0" class="flex flex-wrap gap-5">
+    <div v-if="selectedCards.length > 0" class="flex flex-col gap-5">
 
       <div v-for="(card, index) in selectedCards" :key="index" class="relative group">
          <img

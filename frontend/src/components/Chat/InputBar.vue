@@ -1,11 +1,36 @@
 <script setup>
   import { ref } from 'vue';
 
+  const props = defineProps(['cards']);
   const emit = defineEmits(['send']);
   const inputText = ref('');
 
-  function submit() {
-    emit('send', inputText.value);
+  async function getJudge(prompt) {
+    const url = `http://localhost:5000/api/judges`;
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          message: prompt,
+          cards: props.cards})
+      });
+      if(!response.ok) {
+        throw new Error(`Response Status: ${response.status}`)
+      }
+
+      const result = await response.json();
+      return result.reply;
+
+    } catch (e) {
+      console.error(e.message);
+    }
+  }
+
+  async function submit() {
+    if (!inputText.value.trim()) return;
+    const reply = await getJudge(inputText.value);
+    emit('send', inputText.value, reply);
     inputText.value = '';
   }
 </script>

@@ -46,9 +46,6 @@ onUnmounted(() => {
       <div class="grid py-20">
         <HomeCard v-for="set in sets" :key="set.id" :set="set" />
       </div>
-      <div aria-hidden="true" class="grid py-20">
-        <HomeCard v-for="set in sets" :key="set.id" :set="set" />
-      </div>
     </div>
   </div>
 </template>
