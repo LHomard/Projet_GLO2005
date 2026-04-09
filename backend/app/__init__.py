@@ -3,6 +3,8 @@ import time
 import requests
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+
+from .database import check_user_password
 from .extensions import close_db
 
 
@@ -85,5 +87,21 @@ def create_app():
         _sets_cache["time"] = time.time()
         return jsonify(sets)
 
+    @app.route('/api/login', methods=['POST'])
+    def login():
+        data = request.get_json(silent=True) or {}
+
+        email = (data.get('email') or '').strip()
+        password = data.get('password') or ''
+
+        if not email or not password:
+            return jsonify({'error': 'Email and password are required.'}), 400
+
+        if check_user_password(email, password):
+            return  jsonify({'message': 'Login successful'}), 200
+
+        return jsonify({'error': 'Invalid email or password'}), 403
+
     return app
+
 

@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS Format  (
 );
 
 CREATE TABLE IF NOT EXISTS User  (
-    id_utilisateur INT PRIMARY KEY,
+    id_utilisateur INT PRIMARY KEY AUTO_INCREMENT,
     date_inscription DATE NOT NULL,
     username TEXT,
     password TEXT,
