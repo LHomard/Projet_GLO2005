@@ -1,5 +1,7 @@
 import json, requests
 
+from flask import request, jsonify
+
 headers = {
     "User-Agent": "MTGExampleApp/1.0",
     "Accept": "application/json"
