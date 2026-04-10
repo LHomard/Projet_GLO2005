@@ -85,3 +85,39 @@ def get_random_card_image():
         return {
             'image': card['image']
         }
+
+def get_card_details_logic(card_id):
+    conn = get_db()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+
+    try:
+        query = """
+            SELECT
+                co.name,
+                co.mana_cost,
+                co.cmc,
+                co.power,
+                co.toughness,
+                cp.image_url AS image,
+                cp.artist,
+                cp.price,
+                cp.rarity,
+                s.set_name,
+                s.release_date
+            FROM Card_oracle co
+            JOIN Card_printing cp
+                ON co.id_oracle = cp.id_oracle
+            LEFT JOIN Sets s
+                ON s.id_set = cp.id_set
+            WHERE co.id_oracle = %s
+        """
+        cursor.execute(query, (card_id,))
+        cardDetail = cursor.fetchone()
+
+    finally:
+        cursor.close()
+        conn.close()
+
+    return {
+        'cardDetail': cardDetail
+    }

@@ -5,7 +5,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from services.ai_judges import judges_bp
 
-from .Db_queries.card_queries import get_cards_paginated, get_random_card_image
+from .Db_queries.card_queries import get_cards_paginated, get_random_card_image, get_card_details_logic
 from .Db_queries.set_queries import get_sets_logic
 from .db_connexion import close_db
 
@@ -40,5 +40,11 @@ def create_app():
         data = get_sets_logic()
 
         return jsonify(data)
+
+    @app.route('/api/cards/<int:id>')
+    def get_card_details(id):
+        data = get_card_details_logic(id)
+
+        return jsonify(data['cardDetail'])
 
     return app

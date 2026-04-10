@@ -2,11 +2,13 @@
 import { ref, onMounted } from 'vue'
 import Card from '@/components/Cards/Card.vue'
 import CardSearchBar from '@/components/Cards/CardSearchBar.vue'
+import InfoCardModal from '@/components/Cards/InfoCardModal.vue'
 
 const cards = ref([])
 const page = ref(1)
 const hasMore = ref(true)
 const loading = ref(false)
+const selectedCardId = ref(null)
 
 const fetchCards = async () => {
   loading.value = true
@@ -26,14 +28,23 @@ const loadMore = () => {
 </script>
 
 <template>
-  <div class="h-full">
+  <div>
     <div class="flex justify-center py-6">
       <CardSearchBar />
     </div>
     <div class="flex justify-around gap-4 flex-wrap mx-8">
       <div v-for="card in cards" :key="card.id">
-        <Card :card="card" />
+        <Card
+          :card="card"
+          @select="
+            (id) => {
+              console.log('selected:', id, typeof id)
+              selectedCardId = id
+            }
+          "
+        />
       </div>
+      <InfoCardModal :cardId="selectedCardId" @close="selectedCardId = null" />
     </div>
     <div class="flex justify-center py-8">
       <button
