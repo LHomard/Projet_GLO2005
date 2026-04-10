@@ -9,11 +9,9 @@ let animationFrame = null
 const startScrolling = () => {
   if (!carouselRef.value) return
 
-  // Increment scroll position by a tiny amount every frame
+
   carouselRef.value.scrollLeft += 1
 
-  // If we reach the end of the first set, jump back to start seamlessly
-  // (This requires the track to be 2x the width of the content)
   if (carouselRef.value.scrollLeft >= carouselRef.value.scrollWidth / 2) {
     carouselRef.value.scrollLeft = 0
   }
@@ -25,7 +23,6 @@ onMounted(async () => {
   const res = await fetch('http://localhost:5000/api/sets')
   sets.value = await res.json()
 
-  // Start the auto-scroll after data is loaded
   startScrolling()
 })
 
@@ -47,9 +44,6 @@ onUnmounted(() => {
   >
     <div class="carousel-track">
       <div class="grid py-20">
-        <HomeCard v-for="set in sets" :key="set.id" :set="set" />
-      </div>
-      <div aria-hidden="true" class="grid py-20">
         <HomeCard v-for="set in sets" :key="set.id" :set="set" />
       </div>
     </div>
