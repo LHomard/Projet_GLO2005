@@ -1,5 +1,7 @@
 import json, requests
 
+from flask import request, jsonify
+
 headers = {
     "User-Agent": "MTGExampleApp/1.0",
     "Accept": "application/json"
@@ -11,14 +13,13 @@ scryfall = requests.get(API_URL, headers=headers).json()
 
 print(scryfall)
 def getCards() -> dict:
-    print('1')
     try:
         items = next(
             item for item in scryfall['data']
-            if item['type'] == 'all_cards'
+            if item['type'] == 'default_cards'
         )
     except StopIteration:
-        raise ValueError("all_cards  n'a pas été trouvé")
+        raise ValueError("default_cards  n'a pas été trouvé")
 
     print(items)
 
@@ -29,8 +30,23 @@ def getCards() -> dict:
     except requests.exceptions.JSONDecodeError as e:
         raise ValueError('Aucun JSON valide') from e
 
-    return cards[0]
+    return cards
 
+def get_cards():
+    page = request.args.get('page', 1)
+    res = requests.get(f'https://api.scryfall.com/cards/search?q=*&order=name&page={page}&lang=en')
+    data = res.json()
+    cards = [{
+        'id': card['id'],
+        'name': card['name'],
+        'image': card['image_uris']['normal'] if 'image_uris' in card else None,
+        'type': card['type_line'],
+        'colors': card.get('colors', []),
+    } for card in data['data'] if 'image_uris' in card]
+    return jsonify({
+        'cards': cards,
+        'has_more': data['has_more']
+    })
 def getRules() -> dict:
     try:
         items = next(
