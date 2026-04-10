@@ -6,12 +6,14 @@ from flask_cors import CORS
 from .extensions import close_db
 from services.ai_judges import judges_bp
 
+from .Db_queries.card_queries import get_cards_paginated, get_random_card_image
+from .Db_queries.set_queries import get_sets_logic
+from .db_connexion import close_db
 
 print("INIT LOADED")
 
 def create_app():
     app = Flask(__name__)
-
     CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
     app.register_blueprint(judges_bp)
     app.teardown_appcontext(close_db)
@@ -30,69 +32,23 @@ def create_app():
 
     @app.route('/api/cards/random')
     def random_card():
-        res = requests.get('https://api.scryfall.com/cards/random')
-        card = res.json()
-        return jsonify({
-            'image': card['image_uris']['normal'],
-        })
+        data = get_random_card_image()
+
+        return jsonify(data)
 
     @app.route('/api/cards')
     def get_cards():
-        page = request.args.get('page', 1)
-        search_query = request.args.get('search', '').strip()
-        q = search_query if search_query else '*'
-        res = requests.get(f'https://api.scryfall.com/cards/search?q={q}&order=name&page={page}&lang=en')
+        page = request.args.get("page", default=1, type=int)
 
-        if res.status_code != 200:
-            return jsonify({'cards': [], 'has_more': False})
+        data = get_cards_paginated(page)
 
-        data = res.json()
-        cards = [{
-            'id': card['id'],
-            'name': card['name'],
-            'image': card['image_uris']['normal'] if 'image_uris' in card else None,
-            'type': card['type_line'],
-            'colors': card.get('colors', []),
-            'oracle_text': card['oracle_text'],
-        } for card in data['data'] if 'image_uris' in card]
-        return jsonify({
-            'cards': cards,
-            'has_more': data['has_more']
-        })
+        return jsonify(data)
+
 
     @app.route('/api/sets')
     def get_sets():
-        if _sets_cache["data"] and (time.time() - _sets_cache["time"]) < CACHE_TTL:
-            return jsonify(_sets_cache["data"])
+        data = get_sets_logic()
 
-        res = requests.get('https://api.scryfall.com/sets')
-        data = res.json()
-        filtered = [s for s in data['data'] if s['set_type'] in ['expansion', 'core'] and s['card_count'] > 0]
-        sets = []
-        for s in filtered:
-            image = None
-            card_res = requests.get(
-                'https://api.scryfall.com/cards/search',
-                params={'q': f'set:{s["code"]} has:imagery', 'order': 'edhrec', 'limit': 1}
-            )
-            if card_res.status_code == 200:
-                card_data = card_res.json()
-                if card_data.get('data'):
-                    image = card_data['data'][0].get('image_uris', {}).get('art_crop')
-
-            time.sleep(0.1)
-
-            sets.append({
-                'id': s['id'],
-                'name': s['name'],
-                'icon': s['icon_svg_uri'],
-                'image': image,
-                'card_count': s['card_count'],
-            })
-
-        _sets_cache["data"] = sets
-        _sets_cache["time"] = time.time()
-        return jsonify(sets)
+        return jsonify(data)
 
     return app
-

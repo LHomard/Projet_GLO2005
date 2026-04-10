@@ -1,6 +1,7 @@
 <script setup>
 import HeroSection from "@/components/Home/HeroSection.vue";
 import CardGrid from "@/components/Home/CardGrid.vue";
+import ComboSection from "@/components/Home/ComboSection.vue";
 </script>
 
 <template>
@@ -8,6 +9,8 @@ import CardGrid from "@/components/Home/CardGrid.vue";
       <HeroSection></HeroSection>
 
       <CardGrid />
+
+      <ComboSection />
   </div>
 
 </template>
