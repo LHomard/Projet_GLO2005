@@ -1,32 +1,32 @@
 <script setup>
-  import { ref, onMounted } from 'vue'
-  import Card from "@/components/Cards/Card.vue"
-  import CardSearchBar from "@/components/Cards/CardSearchBar.vue"
+import { ref, onMounted } from 'vue'
+import Card from '@/components/Cards/Card.vue'
+import CardSearchBar from '@/components/Cards/CardSearchBar.vue'
 
-  const cards = ref([])
-  const page = ref(1)
-  const hasMore = ref(true)
-  const loading = ref(false)
+const cards = ref([])
+const page = ref(1)
+const hasMore = ref(true)
+const loading = ref(false)
 
-  const fetchCards = async () => {
-    loading.value = true
-    const res = await fetch(`http://localhost:5000/api/cards?page=${page.value}`)
-    const data = await res.json()
-    cards.value = [...cards.value, ...data.cards]
-    hasMore.value = data.has_more
-    loading.value = false
-  }
+const fetchCards = async () => {
+  loading.value = true
+  const res = await fetch(`http://localhost:5000/api/cards?page=${page.value}`)
+  const data = await res.json()
+  cards.value = [...cards.value, ...data.cards]
+  hasMore.value = data.has_more
+  loading.value = false
+}
 
-  onMounted(() => fetchCards())
+onMounted(() => fetchCards())
 
-  const loadMore = () => {
-    page.value++
-    fetchCards()
-  }
+const loadMore = () => {
+  page.value++
+  fetchCards()
+}
 </script>
 
 <template>
-  <div>
+  <div class="h-full">
     <div class="flex justify-center py-6">
       <CardSearchBar />
     </div>
@@ -48,6 +48,4 @@
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
