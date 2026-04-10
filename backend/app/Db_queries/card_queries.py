@@ -9,7 +9,6 @@ def get_cards_paginated(page=1, cards_per_page=168, sort_by="name", order="asc",
 
     offset = (page - 1) * cards_per_page
 
-    # Sécurité anti-injection SQL
     allowed_sort = {
         "name": "co.name",
         "price": "cp.price",
@@ -20,7 +19,6 @@ def get_cards_paginated(page=1, cards_per_page=168, sort_by="name", order="asc",
     sort_column = allowed_sort.get(sort_by, "co.name")
     order_sql = "ASC" if order == "asc" else "DESC"
 
-    # Filtres dynamiques
     conditions = [
         "co.name NOT LIKE 'A-%%'",
         "co.type_line NOT LIKE '%%Token%%'",

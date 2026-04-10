@@ -33,7 +33,9 @@ watch(() => props.cardId, fetchCardInfo, { immediate: true })
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 overflow-hidden"
       @click.self="$emit('close')"
     >
-      <div class="cardInfo-card max-w-sm w-full mx-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      <div
+        class="cardInfo-card max-w-sm w-full mx-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+      >
         <div v-if="loading" class="text-white text-center py-8">Loading data...</div>
         <div v-else-if="error" class="text-red-500">{{ error }}</div>
 
@@ -50,7 +52,7 @@ watch(() => props.cardId, fetchCardInfo, { immediate: true })
           <div class="card-details">
             <div class="detail-row">
               <span class="label">Mana cost</span>
-              <span class="value">{{ cardInfo.mana_cost ?? '—' }}</span>
+              <span class="value">{{ cardInfo.mana_cost || '—' }}</span>
             </div>
             <div class="detail-row">
               <span class="label">Release date</span
