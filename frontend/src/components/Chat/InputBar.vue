@@ -4,6 +4,7 @@
   const props = defineProps(['cards']);
   const emit = defineEmits(['send']);
   const inputText = ref('');
+  const history = ref([]);
 
   async function getJudge(prompt) {
     const url = `http://localhost:5000/api/judges`;
@@ -13,6 +14,7 @@
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           message: prompt,
+          history: history.value,
           cards: props.cards})
       });
       if(!response.ok) {
@@ -20,7 +22,7 @@
       }
 
       const result = await response.json();
-      return result.reply;
+      return result;
 
     } catch (e) {
       console.error(e.message);
@@ -29,8 +31,13 @@
 
   async function submit() {
     if (!inputText.value.trim()) return;
-    const reply = await getJudge(inputText.value);
-    emit('send', inputText.value, reply);
+    const result = await getJudge(inputText.value);
+
+    history.value.push({ role: 'user', text: inputText.value });
+    if (result && result.reply) {
+      history.value.push({ role: 'ai', text: result.reply });
+    }
+    emit('send', inputText.value, result);
     inputText.value = '';
   }
 </script>

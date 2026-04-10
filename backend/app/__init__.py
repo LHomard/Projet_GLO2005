@@ -29,8 +29,9 @@ def create_app():
     @app.route('/api/cards')
     def get_cards():
         page = request.args.get("page", default=1, type=int)
+        search = request.args.get("search", default="", type=str).strip()
 
-        data = get_cards_paginated(page)
+        data = get_cards_paginated(page, search=search)
 
         return jsonify(data)
 

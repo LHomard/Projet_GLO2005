@@ -17,6 +17,18 @@
     selectedCards.value.splice(index, 1);
     emit('update-cards', selectedCards.value);
   };
+
+  const addCardFromAI = (card) => {
+    if (!selectedCards.value.find(c => c.name === card.name)) {
+      selectedCards.value.push({
+        ...card,
+        image: card.image_url
+      });
+      emit('update-cards', selectedCards.value);
+    }
+  };
+
+  defineExpose({ addCardFromAI });
 </script>
 
 <template>

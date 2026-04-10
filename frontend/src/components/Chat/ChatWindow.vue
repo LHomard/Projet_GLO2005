@@ -8,11 +8,18 @@ import CardInPlay from "@/components/Chat/CardInPlay.vue";
 
 const messages = ref([]);
 const selectedCards = ref([]);
+const cardInPlayRef = ref(null);
 
-function handleSend(text, reply) {
+function handleSend(text, responseData) {
   messages.value.push({ role: 'user', text, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) });
-  if (reply) {
-    messages.value.push({ role: 'ai', text: reply, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})});
+  if (responseData) {
+    messages.value.push({ role: 'ai', text: responseData.reply, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})});
+
+    if (responseData.new_cards && responseData.new_cards.length > 0) {
+      responseData.new_cards.forEach(card => {
+        cardInPlayRef.value?.addCardFromAI(card);
+      });
+    }
   }
 }
 
@@ -25,7 +32,7 @@ const updateCards = (cards) => {
 <template>
   <div class="flex">
     <div class="py-3 px-3 flex-col">
-      <CardInPlay @update-cards="updateCards" />
+      <CardInPlay ref="cardInPlayRef" @update-cards="updateCards" />
     </div>
     <div class="flex flex-col flex-1 h-screen pt-1">
       <div class="fix flex-1 overflow-y-auto px-50 py-4 space-y-3">
