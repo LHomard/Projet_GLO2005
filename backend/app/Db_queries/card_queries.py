@@ -14,6 +14,7 @@ def get_cards_paginated(page=1, cards_per_page=168):
                 co.id_oracle,
                 co.name,
                 co.type_line,
+                cp.id_printing,
                 MAX(cp.image_url) AS image,
                 GROUP_CONCAT(c.color_symbol ORDER BY c.id_color SEPARATOR '') AS colors
             FROM Card_oracle co
@@ -34,6 +35,7 @@ def get_cards_paginated(page=1, cards_per_page=168):
                 co.id_oracle,
                 co.name,
                 co.type_line,
+                cp.id_printing,
                 cp.image_url
             ORDER BY co.name
             LIMIT %s OFFSET %s;
@@ -86,7 +88,7 @@ def get_random_card_image():
             'image': card['image']
         }
 
-def get_card_details_logic(card_id):
+def get_card_details_logic(id_printing):
     conn = get_db()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
 
@@ -109,9 +111,9 @@ def get_card_details_logic(card_id):
                 ON co.id_oracle = cp.id_oracle
             LEFT JOIN Sets s
                 ON s.id_set = cp.id_set
-            WHERE co.id_oracle = %s
+            WHERE cp.id_printing = %s
         """
-        cursor.execute(query, (card_id,))
+        cursor.execute(query, (id_printing,))
         cardDetail = cursor.fetchone()
 
     finally:
