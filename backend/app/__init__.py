@@ -3,7 +3,6 @@ import time
 import requests
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from .extensions import close_db
 from services.ai_judges import judges_bp
 
 from .Db_queries.card_queries import get_cards_paginated, get_random_card_image
@@ -20,15 +19,6 @@ def create_app():
 
     _sets_cache = {"data": None, "time": 0}
     CACHE_TTL = 3600
-
-
-    @app.route('/api/test-db')
-    def test_db():
-        from .extensions import get_db
-        db = get_db()
-        with db.cursor() as cursor:
-            cursor.execute('SELECT 1')
-        return {'status': 'DB connected!'}
 
     @app.route('/api/cards/random')
     def random_card():
