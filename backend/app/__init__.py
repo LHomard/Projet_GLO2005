@@ -29,9 +29,14 @@ def create_app():
     @app.route('/api/cards')
     def get_cards():
         page = request.args.get("page", default=1, type=int)
+        sort_by = request.args.get("sort_by", default="name", type=str)
+        order = request.args.get("order", default="asc", type=str)
+        rarity = request.args.get("rarity", default=None, type=str)
+        min_price = request.args.get("min_price", default=None, type=float)
+        max_price = request.args.get("max_price", default=None, type=float)
 
-        data = get_cards_paginated(page)
-
+        data = get_cards_paginated(page, sort_by=sort_by, order=order, rarity=rarity, min_price=min_price,
+                                   max_price=max_price)
         return jsonify(data)
 
 
