@@ -26,4 +26,4 @@ def import_players_from_csv(csv_file):
     finally:
         connection.close()
 
-import_players_from_csv('data/players.csv')
+import_players_from_csv('players.csv')
