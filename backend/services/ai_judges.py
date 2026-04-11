@@ -5,6 +5,13 @@ import requests
 from flask import request, jsonify, Blueprint
 from groq import Groq
 from app.Db_queries.card_queries import get_card_oracle_text
+from app.Db_queries.ai_queries import get_discussion_history
+
+from app.Db_queries.ai_queries import save_discussion_history
+
+chat_history = [
+
+]
 
 CARD_TOOL = [{
     "type": "function",
@@ -31,7 +38,6 @@ def load_system_prompt():
 
 
 def build_ai_messages(user_message, history, cards_from_frontend):
-    # Logique pour extraire les cartes du terrain
     cards = []
     for c in cards_from_frontend:
         if c.get('name'):
@@ -43,7 +49,6 @@ def build_ai_messages(user_message, history, cards_from_frontend):
 
     messages = [{"role": "system", "content": load_system_prompt() + "\n\nCards:\n" + card_list}]
 
-    # Intégration de la mémoire
     for msg in history:
         role = "assistant" if msg['role'] == 'ai' else "user"
         messages.append({"role": role, "content": msg['text']})
@@ -51,7 +56,10 @@ def build_ai_messages(user_message, history, cards_from_frontend):
     messages.append({"role": "user", "content": user_message})
     return messages
 
-
+'''
+Permet d'appeler l'outil de l'ia(mini fonction) lorsque la recherche de carte est enclenchée.
+Trois status de recherche sont vérifié. (voir get_oracle_card_text)
+'''
 def handle_tool_calls(tool_calls):
     messages_to_add = []
     new_discovered_cards = []
@@ -83,6 +91,8 @@ def judges():
 
     messages = build_ai_messages(data.get('message'), data.get('history', []), data.get('cards', []))
 
+    #save_discussion_history(id_player=data.get('id_player'),history=data.get('history', []))
+
     response = client.chat.completions.create(model=MODEL, messages=messages, tools=CARD_TOOL, temperature=0)
     response_msg = response.choices[0].message
 
@@ -98,5 +108,16 @@ def judges():
         })
 
     return jsonify({'reply': response_msg.content, 'new_cards': []})
+
+"""
+@judges_bp.route('/api/judges/id_player/<int:id>', methods=['GET'])
+def get_history_discussion(id):
+    history = get_discussion_history(id)
+
+    if history:
+        return jsonify({'status': 'success', 'history': history}), 200
+    return jsonify({'status': 'error', 'message': 'Not found'}), 404
+"""
+
 
 
