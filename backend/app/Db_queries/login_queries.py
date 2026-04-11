@@ -1,5 +1,6 @@
 import os
 import pymysql.cursors
+import csv
 from passlib.hash import sha256_crypt
 from datetime import date
 
@@ -24,7 +25,7 @@ def insert_user(username, email, password):
     connection = get_connection()
     try:
         with connection.cursor() as cursor:
-            request = """INSERT INTO User (date_inscription, username, email, password) VALUES ('{}', '{}', '{}', '{}')""".format(
+            request = """INSERT INTO Players (register_date, username, email, password_hash) VALUES ('{}', '{}', '{}', '{}')""".format(
                 date.today(), username, email, hashed_password)
             cursor.execute(request)
     finally:
@@ -34,7 +35,7 @@ def check_user_password(email, password):
     connection = get_connection()
     try:
         with connection.cursor() as cursor:
-            request = """SELECT password FROM User WHERE email = '{}'""".format(email)
+            request = """SELECT password FROM Players WHERE email = '{}'""".format(email)
             cursor.execute(request)
             result = cursor.fetchone()
 
@@ -46,6 +47,3 @@ def check_user_password(email, password):
     finally:
         connection.close()
 
-# Ajout d'un test user
-if __name__ == "__main__":
-    insert_user('username', 'test@email.com', 'password')

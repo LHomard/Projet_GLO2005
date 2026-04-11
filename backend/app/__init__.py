@@ -4,7 +4,7 @@ import requests
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from .database import check_user_password
+from backend.app.Db_queries.login_queries import check_user_password
 from .extensions import close_db
 
 
