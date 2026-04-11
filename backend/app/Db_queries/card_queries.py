@@ -3,7 +3,7 @@ import pymysql
 from app.db_connexion import get_db
 
 
-def get_cards_paginated(page=1, cards_per_page=168, sort_by="name", order="asc", rarity=None, min_price=None, max_price=None):
+def get_cards_paginated(page=1, cards_per_page=168, sort_by="name", order="asc", rarity=None, min_price=None, max_price=None, search=None):
     conn = get_db()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
 
@@ -38,6 +38,9 @@ def get_cards_paginated(page=1, cards_per_page=168, sort_by="name", order="asc",
     if max_price is not None:
         conditions.append("cp.price <= %s")
         params.append(max_price)
+    if search:
+        conditions.append("co.name LIKE %s")
+        params.append(f"%{search}%")
 
     where_clause = "WHERE " + " AND ".join(conditions)
 

@@ -34,16 +34,10 @@ def create_app():
         rarity = request.args.get("rarity", default=None, type=str)
         min_price = request.args.get("min_price", default=None, type=float)
         max_price = request.args.get("max_price", default=None, type=float)
+        search = request.args.get('search')
 
         data = get_cards_paginated(page, sort_by=sort_by, order=order, rarity=rarity, min_price=min_price,
-                                   max_price=max_price)
-        return jsonify(data)
-
-
-    @app.route('/api/sets')
-    def get_sets():
-        data = get_sets_logic()
-
+                                   max_price=max_price, search=search)
         return jsonify(data)
 
     @app.route('/api/cards/<int:id>')
@@ -51,5 +45,12 @@ def create_app():
         data = get_card_details_logic(id)
 
         return jsonify(data['cardDetail'])
+
+    @app.route('/api/sets')
+    def get_sets():
+        data = get_sets_logic()
+
+        return jsonify(data)
+
 
     return app
