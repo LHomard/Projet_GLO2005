@@ -1,6 +1,10 @@
 <script setup>
 import { ref } from 'vue'
-import Deck from '@/components/Decks/Deck.vue' // your deck card component
+import Deck from '@/components/Decks/Deck.vue'
+import DeckPlaceHolder from '@/components/Decks/DeckPlaceHolder.vue'
+import CreateDeckModal from '@/components/Decks/CreateDeckModal.vue'
+
+const showCreateDeckModal = ref(false)
 
 const fakeDecks = ref([
   {
@@ -12,7 +16,7 @@ const fakeDecks = ref([
         image:
           'https://cards.scryfall.io/normal/front/0/c/0c780e37-91b1-4fe1-85c9-7007d91209d5.jpg?1681158251',
         name: 'A-Akki Ronin',
-        type: 'Creature \u2014 Goblin Samurai',
+        type: 'Creature — Goblin Samurai',
       },
       {
         name: 'Ardent Dustspeaker',
@@ -50,14 +54,33 @@ const fakeDecks = ref([
     cards: [],
   },
 ])
+
+const createNewDeck = (deckData) => {
+  fakeDecks.value.push({
+    name: deckData.name,
+    format: deckData.format,
+    commanderColors: deckData.commanderColors,
+    cards: [],
+  })
+
+  showCreateDeckModal.value = false
+}
 </script>
 
 <template>
   <div class="p-8">
     <h1 class="text-2xl font-bold text-white mb-6">Your Decks</h1>
+
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <DeckPlaceHolder @create="showCreateDeckModal = true" />
       <Deck v-for="deck in fakeDecks" :key="deck.name" :deck="deck" />
     </div>
+
+    <CreateDeckModal
+      :open="showCreateDeckModal"
+      @close="showCreateDeckModal = false"
+      @create="createNewDeck"
+    />
   </div>
 </template>
 
