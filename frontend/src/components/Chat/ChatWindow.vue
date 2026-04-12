@@ -5,6 +5,7 @@ import InputBar from "@/components/Chat/InputBar.vue";
 import UserBubble from "@/components/Chat/UserBubble.vue";
 import AIBubble from "@/components/Chat/AIBubble.vue";
 import CardInPlay from "@/components/Chat/CardInPlay.vue";
+import ChatSideBar from "@/components/Chat/ChatSideBar.vue";
 
 const messages = ref([]);
 const selectedCards = ref([]);
@@ -31,6 +32,7 @@ const updateCards = (cards) => {
 
 <template>
   <div class="flex">
+
     <div class="py-3 px-3 flex-col">
       <CardInPlay ref="cardInPlayRef" @update-cards="updateCards" />
     </div>
@@ -43,8 +45,18 @@ const updateCards = (cards) => {
       </div>
 
       <div class="px-4 pb-4">
-        <InputBar @send="handleSend" :cards="selectedCards" />
+        <InputBar
+          :currentChatId="currentChatId"
+          :playerId="1"
+          :cards="selectedCards"
+          @updateChatId="id => currentChatId = id"
+          @send="handleSend"
+        />
       </div>
+    </div>
+
+    <div>
+      <ChatSideBar />
     </div>
   </div>
 </template>
@@ -53,4 +65,14 @@ const updateCards = (cards) => {
   .fix::-webkit-scrollbar {
     display: none;
   }
+
+  .ascii-bg-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1; /* Pushes it behind everything else */
+  pointer-events: none; /* Allows you to click 'through' it to the chat */
+}
 </style>

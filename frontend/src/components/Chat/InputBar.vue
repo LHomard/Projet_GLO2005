@@ -15,7 +15,9 @@
         body: JSON.stringify({
           message: prompt,
           history: history.value,
-          cards: props.cards})
+          cards: props.cards
+          //idPlayer:
+          })
       });
       if(!response.ok) {
         throw new Error(`Response Status: ${response.status}`)
