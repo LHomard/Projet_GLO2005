@@ -5,6 +5,9 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from services.ai_judges import judges_bp
 
+from backend.app.Db_queries.login_queries import check_user_password
+from .extensions import close_db
+
 from .Db_queries.card_queries import get_cards_paginated, get_random_card_image
 from .Db_queries.set_queries import get_sets_logic
 from .db_connexion import close_db
@@ -13,6 +16,7 @@ print("INIT LOADED")
 
 def create_app():
     app = Flask(__name__)
+
     CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
     app.register_blueprint(judges_bp)
     app.teardown_appcontext(close_db)
@@ -42,4 +46,21 @@ def create_app():
 
         return jsonify(data)
 
+    @app.route('/api/login', methods=['POST'])
+    def login():
+        data = request.get_json(silent=True) or {}
+
+        email = (data.get('email') or '').strip()
+        password = data.get('password') or ''
+
+        if not email or not password:
+            return jsonify({'error': 'Email and password are required.'}), 400
+
+        if check_user_password(email, password):
+            return  jsonify({'message': 'Login successful'}), 200
+
+        return jsonify({'error': 'Invalid email or password'}), 403
+
     return app
+
+
