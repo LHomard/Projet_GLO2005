@@ -3,6 +3,7 @@ import Home from '../pages/Home.vue'
 import Decks from '../pages/Decks.vue'
 import Cards from '../pages/Cards.vue'
 import Chat from '../pages/Chat.vue'
+import Login from '../pages/Login.vue'
 
 
 const routes = [
@@ -26,6 +27,11 @@ const routes = [
     path: '/chat',
     name: 'Chat',
     component: Chat,
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: Login,
   },
 ]
 

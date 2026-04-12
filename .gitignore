@@ -32,3 +32,5 @@ local_queries/
 **/node_modules/
 dist/
 .eslintcache
+/backend/run_local.cmd
+/backend/run_database.cmd
