@@ -1,4 +1,5 @@
 import pymysql
+import json
 
 from app.db_connexion import get_db
 
@@ -24,8 +25,6 @@ def get_discussion_history(id_player):
         conn.close()
 
 
-import json
-
 
 def save_discussion_history(id_player, history, id_chat=None):
     conn = get_db()
@@ -44,6 +43,7 @@ def save_discussion_history(id_player, history, id_chat=None):
                     WHERE id_chat = %s
                     """
             cursor.execute(query, (history_json, title, id_chat))
+            conn.commit()
         else:
             query = """
                     INSERT INTO Ai_chats (id_player, chats, title)
@@ -57,4 +57,5 @@ def save_discussion_history(id_player, history, id_chat=None):
     finally:
         cursor.close()
         conn.close()
+
 

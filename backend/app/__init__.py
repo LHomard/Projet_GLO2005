@@ -1,13 +1,8 @@
-import time
-
-import requests
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from services.ai_judges import judges_bp
 
-from backend.app.Db_queries.login_queries import check_user_password
-from .extensions import close_db
-
+from .Db_queries.login_queries import check_user_password
 from .Db_queries.card_queries import get_cards_paginated, get_random_card_image
 from .Db_queries.set_queries import get_sets_logic
 from .db_connexion import close_db

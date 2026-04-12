@@ -91,8 +91,6 @@ def judges():
 
     messages = build_ai_messages(data.get('message'), data.get('history', []), data.get('cards', []))
 
-    #save_discussion_history(id_player=data.get('id_player'),history=data.get('history', []))
-
     response = client.chat.completions.create(model=MODEL, messages=messages, tools=CARD_TOOL, temperature=0)
     response_msg = response.choices[0].message
 
@@ -102,14 +100,27 @@ def judges():
         messages.extend(tool_msgs)
 
         final_res = client.chat.completions.create(model=MODEL, messages=messages)
-        return jsonify({
-            'reply': final_res.choices[0].message.content,
-            'new_cards': discovered
-        })
 
-    return jsonify({'reply': response_msg.content, 'new_cards': []})
+        reply = final_res.choices[0].message.content
+    else:
+        reply = response_msg.content
+        discovered = []
 
-"""
+    chat = [
+        {'role': 'user', 'text': data.get('message')},
+        {'role': 'ai', 'text': reply},
+    ]
+
+    updatedHistory = data.get("history", []) + chat
+    newChat = save_discussion_history(id_player=data.get('playerId'), history=updatedHistory, id_chat=data.get('chatId'))
+
+    return jsonify({
+        'reply': reply,
+        'new_cards': discovered,
+        'chatId': newChat or data.get('chatId')
+    })
+
+
 @judges_bp.route('/api/judges/id_player/<int:id>', methods=['GET'])
 def get_history_discussion(id):
     history = get_discussion_history(id)
@@ -117,7 +128,7 @@ def get_history_discussion(id):
     if history:
         return jsonify({'status': 'success', 'history': history}), 200
     return jsonify({'status': 'error', 'message': 'Not found'}), 404
-"""
+
 
 
 
