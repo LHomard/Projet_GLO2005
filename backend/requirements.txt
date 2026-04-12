@@ -2,6 +2,7 @@ flask
 flask-cors
 pymysql
 cryptography
+passlib
 requests
 groq
 dotenv

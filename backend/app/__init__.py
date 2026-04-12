@@ -5,8 +5,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from services.ai_judges import judges_bp
 
-from backend.app.Db_queries.login_queries import check_user_password
-from .extensions import close_db
+from .Db_queries.login_queries import check_user_password
 
 from .Db_queries.card_queries import get_cards_paginated, get_random_card_image, get_card_details_logic
 from .Db_queries.set_queries import get_sets_logic
@@ -54,18 +53,6 @@ def create_app():
         data = get_sets_logic()
 
         return jsonify(data)
-
-            sets.append({
-                'id': s['id'],
-                'name': s['name'],
-                'icon': s['icon_svg_uri'],
-                'image': image,
-                'card_count': s['card_count'],
-            })
-
-        _sets_cache["data"] = sets
-        _sets_cache["time"] = time.time()
-        return jsonify(sets)
 
     @app.route('/api/login', methods=['POST'])
     def login():
