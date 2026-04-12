@@ -35,7 +35,7 @@ def check_user_password(email, password):
     connection = get_connection()
     try:
         with connection.cursor() as cursor:
-            request = """SELECT password FROM Players WHERE email = '{}'""".format(email)
+            request = """SELECT password_hash FROM Players WHERE email = '{}'""".format(email)
             cursor.execute(request)
             result = cursor.fetchone()
 
