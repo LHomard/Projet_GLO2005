@@ -59,3 +59,22 @@ def save_discussion_history(id_player, history, id_chat=None):
         conn.close()
 
 
+def get_discussion_from_history(id_player, id_chat=None):
+    conn = get_db()
+    cursor = conn.cursor()
+
+    try:
+        query = """
+        SELECT chats, title
+        FROM Ai_chats
+        WHERE id_player = %s
+          AND id_chat = %s
+          AND chats IS NOT NULL
+        """
+        cursor.execute(query, (id_player, id_chat))
+        conn.commit()
+        return cursor.fetchone()
+
+    finally:
+        cursor.close()
+        conn.close()

@@ -6,8 +6,8 @@ from flask import request, jsonify, Blueprint
 from groq import Groq
 from app.Db_queries.card_queries import get_card_oracle_text
 from app.Db_queries.ai_queries import get_discussion_history
-
 from app.Db_queries.ai_queries import save_discussion_history
+from .app.Db_queries.ai_queries import get_discussion_from_history
 
 chat_history = [
 
@@ -130,5 +130,11 @@ def get_history_discussion(id):
     return jsonify({'status': 'error', 'message': 'Not found'}), 404
 
 
+@judges_bp.route('/api/judges/chat/<int:id>', methods=['GET'])
+def get_history_from_discussion(id):
+    chat = get_discussion_from_history(id)
 
+    if chat:
+        return jsonify({'status': 'success', 'chat': chat}), 200
+    return jsonify({'status': 'error', 'message': 'Not found'}), 404
 
