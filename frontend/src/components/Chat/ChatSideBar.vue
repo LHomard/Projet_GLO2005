@@ -1,30 +1,9 @@
 <script setup>
-/*
-  import { ref, onMounted } from 'vue';
+  const emit = defineEmits(['newChat']);
 
-  async function getDiscussion(id) {
-    const url = `http://localhost:5000/api/judges`;
-    try {
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {'Content-Type': 'application/json'},
-      });
-      if(!response.ok) {
-        throw new Error(`Response Status: ${response.status}`)
-      }
-
-      const result = await response.json();
-
-      const historyList = typeof result.history === 'string'
-                    ? JSON.parse(result.history)
-                    : result.history;
-
-    } catch (e) {
-      console.error(e.message);
-    }
+    function newChat() {
+    emit('newChat');
   }
-
- */
 </script>
 
 <template>
@@ -40,7 +19,7 @@
 				</label>
 			</div>
     <nav class="flex-1 px-8 py-4 bg-gray-800">
-      <button>
+      <button @click="newChat">
         New Chat
       </button>
 
