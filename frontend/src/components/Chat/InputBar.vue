@@ -13,7 +13,7 @@
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           message: prompt,
-          history: props.value,
+          history: props.history,
           cards: props.cards,
           playerId: props.playerId,
           chatId: props.currentChatId

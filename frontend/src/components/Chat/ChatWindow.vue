@@ -17,7 +17,11 @@
     if (responseData) {
       messages.value.push({ role: 'ai', text: responseData.reply, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})});
 
-      if (responseData.new_cards && responseData.new_cards.length > 0) {
+      if (responseData.chatId) {
+        currentChatId.value = responseData.chatId;
+      }
+
+      if (responseData.new_cards?.length > 0) {
         responseData.new_cards.forEach(card => {
           cardInPlayRef.value?.addCardFromAI(card);
         });
@@ -63,7 +67,6 @@
           :playerId="1"
           :cards="selectedCards"
           :history="messages"
-          @updateChatId="id => currentChatId = id"
           @send="handleSend"
         />
       </div>
