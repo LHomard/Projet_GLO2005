@@ -1,11 +1,12 @@
 import csv
 from datetime import date
 
-from backend.app.Db_queries.login_queries import get_connection, hash_password
+from backend.app.Db_queries.login_queries import hash_password
+from app.db_connexion import get_db
 
 
 def import_players_from_csv(csv_file):
-    connection = get_connection()
+    connection = get_db()
 
     try:
         with open(csv_file, newline='') as file:

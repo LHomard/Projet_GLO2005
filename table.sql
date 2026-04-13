@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS Players (
     id_player INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR (255) NOT NULL UNIQUE,
+    age INT NOT NULL,
     password_hash TEXT NOT NULL,
     register_date DATE DEFAULT (CURRENT_DATE)
 );

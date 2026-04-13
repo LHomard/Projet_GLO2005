@@ -1,11 +1,13 @@
-import time
-
-import requests
-from flask import Flask, jsonify, request
+import pymysql
+from flask import Flask, jsonify, request, session
 from flask_cors import CORS
 from services.ai_judges import judges_bp
+from flask_login import LoginManager, login_user, current_user, login_required
 
-from .Db_queries.login_queries import check_user_password
+from .Db_queries.color_queries import get_all_colors_logic
+from .Db_queries.deck_queries import create_deck_logic, delete_deck_logic, get_deck_by_id_logic
+from .Db_queries.format_queries import get_all_formats_logic
+from .Db_queries.login_queries import check_user_password, get_user_by_id, get_user_by_email, insert_user
 
 from .Db_queries.card_queries import get_cards_paginated, get_random_card_image, get_card_details_logic
 from .Db_queries.set_queries import get_sets_logic
@@ -15,9 +17,13 @@ print("INIT LOADED")
 
 def create_app():
     app = Flask(__name__)
-    CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
+    CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}}, supports_credentials=True)
     app.register_blueprint(judges_bp)
     app.teardown_appcontext(close_db)
+    app.secret_key = 'dev_secret_key'
+
+    login_manager = LoginManager()
+    login_manager.init_app(app)
 
     _sets_cache = {"data": None, "time": 0}
     CACHE_TTL = 3600
@@ -65,10 +71,74 @@ def create_app():
             return jsonify({'error': 'Email and password are required.'}), 400
 
         if check_user_password(email, password):
-            return  jsonify({'message': 'Login successful'}), 200
+            user = get_user_by_email(email)
+            login_user(user)
+            return jsonify({'message': 'Login successful'}), 200
 
         return jsonify({'error': 'Invalid email or password'}), 403
 
-    return app
 
+    @app.route('/api/decks/<int:id>')
+    def get_deck_by_user_id(user_id):
+        data = get_deck_by_id_logic(user_id)
+
+        return jsonify(data)
+
+
+    @app.route('/api/decks', methods=['POST'])
+    @login_required
+    def create_deck():
+        data = request.get_json(silent=True) or {}
+
+        deck_name = data.get('deck_name')
+        format_name = data.get('format_name')
+        format_name = format_name.strip()
+
+
+        if not deck_name or not format_name:
+           return jsonify({'error': 'deck_name or format_name are required.'}), 400
+
+        result = create_deck_logic(deck_name, format_name, current_user.id)
+
+
+        if result is None:
+            return jsonify({'error': 'Format introuvable'}), 404
+
+        return jsonify({
+            'id_deck': result['id_deck'],
+            'nom': result['deck_name'],
+            'id_format': result['id_format']
+        }), 201
+
+
+    @app.route('/api/decks/<int:deck_id>', methods=['DELETE'])
+    @login_required
+    def delete_deck(deck_id):
+        deck = get_deck_by_id_logic(deck_id)
+
+        if deck is None:
+            return jsonify({'error': 'Deck introuvable'}), 404
+
+        if deck['user_id'] != current_user.id:
+            return jsonify({'error': 'Accès refusé'}), 403
+
+        data = delete_deck_logic(deck_id)
+
+        return jsonify(data), 200
+
+    @app.route('/api/formats')
+    def get_all_formats():
+        data = get_all_formats_logic()
+
+        return jsonify(data)
+
+
+    @app.route('/api/Colors')
+    def get_all_colors():
+        data = get_all_colors_logic()
+
+        return jsonify(data)
+
+
+    return app
 

@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
 const props = defineProps({ deck: Object })
+const emit = defineEmits(['delete_deck'])
 
 const deckColors = computed(() => {
   const colorsSet = new Set()
@@ -76,7 +77,12 @@ onBeforeUnmount(() => {
         class="absolute top-10 right-2 bg-gray-800 border border-gray-700 rounded shadow-lg z-10 w-32"
       >
         <button class="block w-full text-left px-4 py-2 hover:bg-gray-700">Edit</button>
-        <button class="block w-full text-left px-4 py-2 hover:bg-red-600">Delete</button>
+        <button
+          class="block w-full text-left px-4 py-2 hover:bg-red-600"
+          @click="$emit('delete_deck', deck.id)"
+        >
+          Delete
+        </button>
       </div>
     </div>
 

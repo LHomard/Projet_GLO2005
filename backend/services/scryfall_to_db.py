@@ -1,5 +1,6 @@
 import os
 import time
+from datetime import date
 
 import ijson
 import pymysql
@@ -370,6 +371,7 @@ def populate_legalities(cards):
         conn.close()
 
 
+
 def run_full_population():
     populate_sets()
     populate_colors()
@@ -388,7 +390,6 @@ def run_full_population():
 
     default_data = fetch_scryfall_stream("default_cards")
     populate_card_printing(default_data)
-
 
 if __name__ == "__main__":
     run_full_population()
