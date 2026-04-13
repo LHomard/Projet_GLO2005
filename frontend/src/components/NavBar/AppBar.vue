@@ -9,6 +9,12 @@ import {
   MenuItems,
 } from '@headlessui/vue'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+import { computed, inject} from 'vue'
+import { RouterLink, useRouter } from 'vue-router'
+
+const router = useRouter()
+const auth = inject('auth')
+const displayName = computed(() => auth.currentUser.value?.username ?? 'Guest')
 
 const navigation = [
   { name: 'Home', href: '/'},
@@ -16,6 +22,11 @@ const navigation = [
   { name: 'Deck building', href: '/decks'},
   { name: 'Chat', href: '/chat'},
 ]
+
+async function handleLogout() {
+  auth.logout()
+  await router.push({ name: 'Home'})
+}
 </script>
 
 <template>
@@ -97,15 +108,35 @@ const navigation = [
                     >Settings</a
                   >
                 </MenuItem>
-                <MenuItem v-slot="{ active }">
-                  <a href="/login" :class="[active ? 'bg-white/5 outline-hidden' : '', 'block px-4 py-2 text-sm text-gray-300']">Log in</a>
+                <MenuItem v-if="!auth.isLoggedIn.value" v-slot="{ active }">
+                  <RouterLink
+                    to="/login"
+                    :class="[
+                      active ? 'bg-white/5 outline-hidden' : '',
+                      'block px-4 py-2 text-sm text-gray-300',
+                    ]"
+                  >
+                    Log in
+                  </RouterLink>
                 </MenuItem>
-                <MenuItem v-slot="{ active }">
-                  <a href="#" :class="[active ? 'bg-white/5 outline-hidden' : '', 'block px-4 py-2 text-sm text-gray-300']">Log out</a>
+                <MenuItem v-if="auth.isLoggedIn.value" v-slot="{ active }">
+                  <button
+                    type="button"
+                    @click="handleLogout"
+                    :class="[
+                      active ? 'bg-white/5 outline-hidden' : '',
+                      'block w-full px-4 py-2 text-left text-sm text-gray-300',
+                    ]"
+                  >
+                    Log out
+                  </button>
                 </MenuItem>
               </MenuItems>
             </transition>
           </Menu>
+          <div class="px-3 py-2 text-sm font-medium text-gray-300">
+            {{ displayName }}
+          </div>
         </div>
       </div>
     </div>
