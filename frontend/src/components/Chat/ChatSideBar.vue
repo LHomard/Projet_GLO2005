@@ -1,13 +1,57 @@
 <script setup>
-  const emit = defineEmits(['newChat']);
+  import { ref, onMounted } from "vue";
 
-    function newChat() {
+  const props = defineProps(['playerId'])
+  const emit = defineEmits(['newChat', 'getSelectedChat']);
+  const chatDiscussion = ref([]);
+
+  onMounted(async () => {
+    const res = await fetch(`http://localhost:5000/api/judges/id_player/${props.playerId}`);
+    const data = await res.json();
+    chatDiscussion.value = data.history || [];
+  })
+
+  function newChat() {
     emit('newChat');
   }
+
+  async function getSelectedChat(chatId) {
+
+    const url = `http://localhost:5000/api/judges/chat/${chatId}`;
+    try {
+      const response = await fetch(url);
+      if(!response.ok) {
+        throw new Error(`Response Status: ${response.status}`)
+      }
+
+      const result = await response.json();
+      emit('getSelectedChat', {chatId, history: result.chat.chats})
+
+    } catch (e) {
+      console.error(e.message);
+    }
+  }
+
+  async function deleteChat(chatId){
+    const url = `http://localhost:5000/api/chat/${chatId}`
+    try  {
+      const response = await fetch(url, {method: 'DELETE'});
+      if (!response.ok){
+        throw new Error(`Response status: ${response.status}`)
+      }
+
+      chatDiscussion.value = chatDiscussion.value.filter(chat => chat.id_chat !== chatId);
+
+    } catch(e){
+      console.error(e.message);
+    }
+  }
+
+
 </script>
 
 <template>
-  <div class="hidden peer-checked:flex md:flex flex-col w-80 bg-gray-800 transition-all duration-300 ease-in-out">
+  <div class="hidden peer-checked:flex md:flex flex-col w-80 bg-gray-800 transition-all duration-300 ease-in-out h-screen">
 			<div class="flex items-center justify-between h-16 bg-gray-900 px-4">
 				<span class="text-white font-bold uppercase">The Oracle</span>
 				<label for="menu-toggle" class="text-white cursor-pointer">
@@ -18,17 +62,23 @@
 					</svg>
 				</label>
 			</div>
-    <nav class="flex-1 px-8 py-4 bg-gray-800">
       <button @click="newChat">
         New Chat
       </button>
+    <nav class="chat flex-1 px-8 py-4 bg-gray-800 overflow-y-scroll">
 
       <hr class="border-b-black my-3">
 
 
-      <a class="fancy" href="#">
+      <a v-for="chat in chatDiscussion"
+         :key="chat.id_chat"
+         @click="getSelectedChat(chat.id_chat)"
+         class="fancy" href="#">
+                <button @click.stop="deleteChat(chat.id_chat)">
+          x
+        </button>
         <span class="top-key"></span>
-        <span class="text">Nom du chat abhjk dgsjhkald</span>
+        <span class="text">{{ chat.title }}</span>
         <span class="bottom-key-1"></span>
         <span class="bottom-key-2"></span>
       </a>
@@ -63,6 +113,7 @@
  width: 100%;
 
 }
+
 
 .fancy::before {
  content: " ";
@@ -179,5 +230,9 @@ button:before {
 button:hover:before {
   background-color: #fff;
   width: 3rem;
+}
+
+.chat::-webkit-scrollbar {
+  display: none;
 }
 </style>

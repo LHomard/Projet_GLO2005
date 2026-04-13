@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from services.ai_judges import judges_bp
 
+from .Db_queries.ai_queries import get_all_discussion_from_history, delete_chat, get_discussion_from_history
 from .Db_queries.login_queries import check_user_password
 from .Db_queries.card_queries import get_cards_paginated, get_random_card_image
 from .Db_queries.set_queries import get_sets_logic
@@ -17,7 +18,6 @@ def create_app():
     app.teardown_appcontext(close_db)
 
     _sets_cache = {"data": None, "time": 0}
-    CACHE_TTL = 3600
 
     @app.route('/api/cards/random')
     def random_card():
@@ -56,6 +56,21 @@ def create_app():
 
         return jsonify({'error': 'Invalid email or password'}), 403
 
+
+    @app.route('/api/chat/<int:id>', methods=['GET', 'DELETE'])
+    def get_chat_history(id):
+        if request.method == 'GET':
+            data = get_all_discussion_from_history(id)
+            return jsonify(data)
+
+        if request.method == 'DELETE':
+            data = delete_chat(id)
+            return jsonify(data)
+        return None
+
+
+
     return app
+
 
 

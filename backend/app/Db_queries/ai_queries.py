@@ -59,21 +59,60 @@ def save_discussion_history(id_player, history, id_chat=None):
         conn.close()
 
 
-def get_discussion_from_history(id_player, id_chat=None):
+def get_all_discussion_from_history(id_player):
     conn = get_db()
-    cursor = conn.cursor()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+
+    try:
+        query = """
+                SELECT id_chat, title
+                FROM Ai_chats
+                WHERE id_player = %s
+                """
+        cursor.execute(query, (id_player,))
+        conn.commit()
+        return cursor.fetchall()
+
+    finally:
+        cursor.close()
+        conn.close()
+
+def get_discussion_from_history(id_chat):
+    conn = get_db()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
 
     try:
         query = """
         SELECT chats, title
         FROM Ai_chats
-        WHERE id_player = %s
-          AND id_chat = %s
+        WHERE id_chat = %s
           AND chats IS NOT NULL
         """
-        cursor.execute(query, (id_player, id_chat))
+        cursor.execute(query, (id_chat,))
         conn.commit()
-        return cursor.fetchone()
+        chat = cursor.fetchone()
+
+        if chat:
+            chat['chats'] = json.loads(chat['chats'])
+        return chat
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def delete_chat(id_chat):
+    conn = get_db()
+    cursor = conn.cursor()
+
+    try:
+        query = """
+        DELETE FROM Ai_chats
+        WHERE id_chat = %s
+        """
+        cursor.execute(query, (id_chat,))
+        conn.commit()
+        return cursor.rowcount
 
     finally:
         cursor.close()

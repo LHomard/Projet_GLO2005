@@ -1,10 +1,9 @@
 <script setup>
   import { ref } from 'vue';
 
-  const props = defineProps(['cards', 'currentChatId', 'playerId']);
+  const props = defineProps(['cards', 'currentChatId', 'playerId', 'history']);
   const emit = defineEmits(['send', 'updatedChatId']);
   const inputText = ref('');
-  const history = ref([]);
 
   async function getJudge(prompt) {
     const url = `http://localhost:5000/api/judges`;
@@ -14,7 +13,7 @@
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           message: prompt,
-          history: history.value,
+          history: props.value,
           cards: props.cards,
           playerId: props.playerId,
           chatId: props.currentChatId
@@ -36,16 +35,7 @@
   async function submit() {
     if (!inputText.value.trim()) return;
 
-    if(!props.currentChatId) {
-      history.value = [];
-    }
-
     const result = await getJudge(inputText.value);
-
-    history.value.push({ role: 'user', text: inputText.value });
-    if (result && result.reply) {
-      history.value.push({ role: 'ai', text: result.reply });
-    }
 
     emit('send', inputText.value, result);
     inputText.value = '';

@@ -7,13 +7,14 @@ from groq import Groq
 from app.Db_queries.card_queries import get_card_oracle_text
 from app.Db_queries.ai_queries import get_discussion_history
 from app.Db_queries.ai_queries import save_discussion_history
-from .app.Db_queries.ai_queries import get_discussion_from_history
+from app.Db_queries.ai_queries import get_discussion_from_history
+from app.Db_queries.ai_queries import get_all_discussion_from_history
 
 chat_history = [
 
 ]
 
-CARD_TOOL = [{
+tools = [{
     "type": "function",
     "function": {
         "name": "get_card_info",
@@ -88,10 +89,12 @@ def handle_tool_calls(tool_calls):
 @judges_bp.route('/api/judges', methods=['POST'])
 def judges():
     data = request.get_json()
+    print('chatId reçu:', data.get('chatId'))
+    print('playerId reçu:', data.get('playerId'))
 
     messages = build_ai_messages(data.get('message'), data.get('history', []), data.get('cards', []))
 
-    response = client.chat.completions.create(model=MODEL, messages=messages, tools=CARD_TOOL, temperature=0)
+    response = client.chat.completions.create(model=MODEL, messages=messages, tools=tools, temperature=0, tool_choice="auto")
     response_msg = response.choices[0].message
 
     if response_msg.tool_calls:
@@ -123,10 +126,10 @@ def judges():
 
 @judges_bp.route('/api/judges/id_player/<int:id>', methods=['GET'])
 def get_history_discussion(id):
-    history = get_discussion_history(id)
+    history = get_all_discussion_from_history(id)
 
     if history:
-        return jsonify({'status': 'success', 'history': history}), 200
+        return jsonify({'status': 'success', 'history': history or []}), 200
     return jsonify({'status': 'error', 'message': 'Not found'}), 404
 
 

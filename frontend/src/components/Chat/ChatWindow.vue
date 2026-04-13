@@ -11,7 +11,6 @@
   const selectedCards = ref([]);
   const cardInPlayRef = ref(null);
   const currentChatId = ref(null);
-  const inputBarRef = ref(null);
 
   function handleSend(text, responseData) {
     messages.value.push({ role: 'user', text, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) });
@@ -24,6 +23,13 @@
         });
       }
     }
+  }
+
+  function onSelectChat({chatId, history}){
+    currentChatId.value = chatId
+    messages.value = history.map(msg => ({
+      ...msg, time: ''
+    }))
   }
 
   function resetChat() {
@@ -56,6 +62,7 @@
           :currentChatId="currentChatId"
           :playerId="1"
           :cards="selectedCards"
+          :history="messages"
           @updateChatId="id => currentChatId = id"
           @send="handleSend"
         />
@@ -63,7 +70,11 @@
     </div>
 
     <div>
-      <ChatSideBar @newChat="resetChat"/>
+      <ChatSideBar
+        :playerId="1"
+        @newChat="resetChat"
+        @getSelectedChat="onSelectChat"
+      />
     </div>
   </div>
 </template>
