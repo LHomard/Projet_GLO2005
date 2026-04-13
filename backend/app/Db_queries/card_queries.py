@@ -3,17 +3,54 @@ import pymysql
 from app.db_connexion import get_db
 
 
-def get_cards_paginated(page=1, cards_per_page=168, search=""):
+def get_cards_paginated(page=1, cards_per_page=168, sort_by="name", order="asc", rarity=None, min_price=None, max_price=None, search=None):
     conn = get_db()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
 
     offset = (page - 1) * cards_per_page
+
+    allowed_sort = {
+        "name": "co.name",
+        "price": "cp.price",
+        "cmc": "co.cmc",
+        "rarity": "cp.rarity",
+        "release_date": "cp.release_date"
+    }
+    sort_column = allowed_sort.get(sort_by, "co.name")
+    order_sql = "ASC" if order == "asc" else "DESC"
+
+    conditions = [
+        "co.name NOT LIKE 'A-%%'",
+        "co.type_line NOT LIKE '%%Token%%'",
+        "co.type_line NOT LIKE '%%Emblem%%'",
+        "co.type_line NOT LIKE '%%Card%%'",
+        "co.name NOT LIKE '%%//%%'",
+        "cp.image_url IS NOT NULL",
+    ]
+    params = []
+
+    if rarity:
+        conditions.append("cp.rarity = %s")
+        params.append(rarity)
+    if min_price is not None:
+        conditions.append("cp.price >= %s")
+        params.append(min_price)
+    if max_price is not None:
+        conditions.append("cp.price <= %s")
+        params.append(max_price)
+    if search:
+        conditions.append("co.name LIKE %s")
+        params.append(f"%{search}%")
+
+    where_clause = "WHERE " + " AND ".join(conditions)
+
     try:
-        query = """
+        query = f"""
             SELECT
                 co.id_oracle,
                 co.name,
                 co.type_line,
+                cp.id_printing,
                 MAX(cp.image_url) AS image,
                 GROUP_CONCAT(c.color_symbol ORDER BY c.id_color SEPARATOR '') AS colors
             FROM Card_oracle co
@@ -23,29 +60,26 @@ def get_cards_paginated(page=1, cards_per_page=168, search=""):
                 ON co.id_oracle = cc.id_oracle
             LEFT JOIN Colors c
                 ON cc.id_color = c.id_color
-            WHERE
-                co.name NOT LIKE 'A-%%' -- Afin d'éviter les doubles faces
-                AND co.type_line NOT LIKE '%%Token%%' 
-                AND co.type_line NOT LIKE '%%Emblem%%'
-                AND co.type_line NOT LIKE '%%Card%%'
-                AND co.name NOT LIKE '%%//%%' -- Afin d'éviter les doubles faces
-                AND cp.image_url IS NOT NULL 
-                AND co.name LIKE %s
+            {where_clause}
             GROUP BY
                 co.id_oracle,
                 co.name,
                 co.type_line,
+                cp.id_printing,
                 cp.image_url
-            ORDER BY co.name
+            ORDER BY {sort_column} {order_sql}
             LIMIT %s OFFSET %s;
         """
-        search_param = f"{search}%" if search else "%"
-        cursor.execute(query, (search_param, cards_per_page, offset))
+        cursor.execute(query, (*params, cards_per_page, offset))
         cards = cursor.fetchall()
-        print(cards)
 
-        count_query = """SELECT COUNT(*) AS total_cards FROM Card_oracle;"""
-        cursor.execute(count_query)
+        count_query = f"""
+            SELECT COUNT(DISTINCT co.id_oracle) AS total_cards
+            FROM Card_oracle co
+            JOIN Card_printing cp ON co.id_oracle = cp.id_oracle
+            {where_clause}
+        """
+        cursor.execute(count_query, params)
         total = cursor.fetchone()["total_cards"]
 
         has_more = (page * cards_per_page) < total
@@ -58,7 +92,6 @@ def get_cards_paginated(page=1, cards_per_page=168, search=""):
         "cards": cards,
         "has_more": has_more,
     }
-
 
 
 def get_random_card_image():
@@ -133,3 +166,39 @@ def get_card_oracle_text(card_name):
         conn.close()
 
     return card
+
+def get_card_details_logic(id_printing):
+    conn = get_db()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+
+    try:
+        query = """
+            SELECT
+                co.name,
+                co.mana_cost,
+                co.cmc,
+                co.power,
+                co.toughness,
+                cp.image_url AS image,
+                cp.artist,
+                cp.price,
+                cp.rarity,
+                s.set_name,
+                s.release_date
+            FROM Card_oracle co
+            JOIN Card_printing cp
+                ON co.id_oracle = cp.id_oracle
+            LEFT JOIN Sets s
+                ON s.id_set = cp.id_set
+            WHERE cp.id_printing = %s
+        """
+        cursor.execute(query, (id_printing,))
+        cardDetail = cursor.fetchone()
+
+    finally:
+        cursor.close()
+        conn.close()
+
+    return {
+        'cardDetail': cardDetail
+    }

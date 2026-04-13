@@ -1,14 +1,15 @@
 <script setup>
-import { ref } from 'vue'
+import { inject, ref } from 'vue'
 import { useRouter } from 'vue-router'
+
+const auth = inject('auth')
+const router = useRouter()
 
 const email = ref('')
 const password = ref('')
 
 const errorMessage = ref('')
 const isLoading = ref(false)
-
-const router = useRouter()
 
 async function login() {
   errorMessage.value = ''
@@ -33,7 +34,8 @@ async function login() {
       return
     }
 
-    await router.push({ name: 'Decks' })
+    auth.login(data.user)
+    await router.push({ name: 'Deck building' })
   } catch (error) {
     errorMessage.value = 'Server unavailable.'
     console.error(error)
@@ -44,24 +46,18 @@ async function login() {
 </script>
 
 <template>
-  <section
-    class="min-h-screen bg-black flex items-center justify-center px-6 py-8">
+  <section class="min-h-screen bg-black flex items-center justify-center px-6 py-8">
     <div class="w-full max-w-md">
       <div
         class="w-full rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 bg-gray-800/50 border-gray-800/90"
       >
         <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-          <h1
-            class="text-xl font-bold leading-tight tracking-tight md:text-2xl text-white"
-          >
+          <h1 class="text-xl font-bold leading-tight tracking-tight md:text-2xl text-white">
             Log in to your account
           </h1>
           <form class="space-y-4 md:space-y-6" @submit.prevent="login">
             <div>
-              <label
-                for="email"
-                class="block mb-2 text-sm font-medium text-white"
-              >
+              <label for="email" class="block mb-2 text-sm font-medium text-white">
                 Your email
               </label>
               <input
@@ -75,10 +71,7 @@ async function login() {
               />
             </div>
             <div>
-              <label
-                for="password"
-                class="block mb-2 text-sm font-medium text-white"
-              >
+              <label for="password" class="block mb-2 text-sm font-medium text-white">
                 Password
               </label>
               <input
@@ -103,9 +96,7 @@ async function login() {
             </button>
             <p class="text-sm font-light text-gray-400">
               Don’t have an account yet?
-              <a href="#" class="font-medium text-blue-500">
-                Sign up
-              </a>
+              <a href="#" class="font-medium text-blue-500"> Sign up </a>
             </p>
           </form>
         </div>
