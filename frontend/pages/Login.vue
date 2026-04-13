@@ -1,14 +1,15 @@
 <script setup>
-import { ref } from 'vue'
+import { inject, ref } from 'vue'
 import { useRouter } from 'vue-router'
+
+const auth = inject('auth')
+const router = useRouter()
 
 const email = ref('')
 const password = ref('')
 
 const errorMessage = ref('')
 const isLoading = ref(false)
-
-const router = useRouter()
 
 async function login() {
   errorMessage.value = ''
@@ -33,7 +34,8 @@ async function login() {
       return
     }
 
-    await router.push({ name: 'Decks' })
+    auth.login(data.user)
+    await router.push({ name: 'Deck building' })
   } catch (error) {
     errorMessage.value = 'Server unavailable.'
     console.error(error)

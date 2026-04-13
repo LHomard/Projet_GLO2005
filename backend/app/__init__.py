@@ -64,8 +64,13 @@ def create_app():
         if not email or not password:
             return jsonify({'error': 'Email and password are required.'}), 400
 
-        if check_user_password(email, password):
-            return  jsonify({'message': 'Login successful'}), 200
+        user = check_user_password(email, password)
+
+        if user:
+            return jsonify({
+                'message': 'Login successful.',
+                'user': user
+            }), 200
 
         return jsonify({'error': 'Invalid email or password'}), 403
 
