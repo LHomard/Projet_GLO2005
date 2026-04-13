@@ -1,18 +1,8 @@
-import os
-import pymysql.cursors
-import csv
 from passlib.hash import sha256_crypt
 from datetime import date
 
+from app.db_connexion import get_db
 
-def get_connection():
-    return pymysql.connect(
-        host=os.getenv("DB_HOST"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-        db=os.getenv("DB_NAME"),
-        autocommit=True,
-    )
 
 def hash_password(password):
     return sha256_crypt.hash(password)
@@ -22,7 +12,7 @@ def verify_password(plain_password, hashed_password):
 
 def insert_user(username, email, password):
     hashed_password = hash_password(password)
-    connection = get_connection()
+    connection = get_db()
     try:
         with connection.cursor() as cursor:
             request = """INSERT INTO Players (register_date, username, email, password_hash) VALUES ('{}', '{}', '{}', '{}')""".format(
@@ -32,18 +22,21 @@ def insert_user(username, email, password):
         connection.close()
 
 def check_user_password(email, password):
-    connection = get_connection()
+    connection = get_db()
     try:
         with connection.cursor() as cursor:
-            request = """SELECT password_hash FROM Players WHERE email = '{}'""".format(email)
+            request = """SELECT id_player, username, email, password_hash FROM Players WHERE email = '{}'""".format(email)
             cursor.execute(request)
             result = cursor.fetchone()
 
-            if result is None:
-                return False
-
-            hashed_password = result[0]
-            return verify_password(password, hashed_password)
+            user_id, username, email, hashed_password = result
+            if verify_password(password, hashed_password):
+                return {'id': user_id,
+                        'username': username,
+                        'email': email,
+                        }
+            else:
+                return None
     finally:
         connection.close()
 
