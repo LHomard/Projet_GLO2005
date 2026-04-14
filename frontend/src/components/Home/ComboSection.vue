@@ -1,10 +1,10 @@
 <script setup>
-import {onMounted, ref} from "vue";
-  import Card from "@/components/Cards/Card.vue";
+  import { onMounted, ref } from "vue";
 
   const combo = ref(null)
- async function getCombo() {
-      const stored = localStorage.getItem('dailyCombo')
+
+  async function getCombo() {
+    const stored = localStorage.getItem('dailyCombo')
     const storedDate = localStorage.getItem('dailyComboDate')
     const today = new Date().toDateString()
 
@@ -12,25 +12,25 @@ import {onMounted, ref} from "vue";
       combo.value = JSON.parse(stored)
       return
     }
-    const base_url = "https://backend.commanderspellbook.com/variants/?ordering=random&limit=1"
-   try {
-      const response = await fetch(base_url);
-     if (!response.ok) {
-       throw new Error(`Response Status : ${response.status}`);
-     }
 
-     const result = await response.json();
-     combo.value = result.results[0];
+    try {
+      const offset = Math.floor(Math.random() * 83818)
 
-     localStorage.setItem('dailyCombo', JSON.stringify(combo.value));
-     localStorage.setItem('dailyComboDate', today);
+      const response = await fetch(
+        `https://backend.commanderspellbook.com/variants/?limit=1&offset=${offset}`
+      )
+      const result = await response.json()
+      combo.value = result.results[0]
 
-   } catch(e) {
-      console.error(e.message);
-   }
- }
+      localStorage.setItem('dailyCombo', JSON.stringify(combo.value))
+      localStorage.setItem('dailyComboDate', today)
 
- onMounted(() => getCombo());
+    } catch(e) {
+      console.error(e.message)
+    }
+  }
+
+  onMounted(() => getCombo())
 </script>
 
 <template>
@@ -41,7 +41,6 @@ import {onMounted, ref} from "vue";
     </div>
 
     <div v-if="combo" class="combo-card">
-      <!-- Cards display -->
       <div class="cards-row">
         <div
           v-for="(use, index) in combo.uses"

@@ -7,7 +7,8 @@ from services.ai_judges import judges_bp
 
 from .Db_queries.ai_queries import get_all_discussion_from_history, delete_chat, get_discussion_from_history
 from .Db_queries.login_queries import check_user_password
-from .Db_queries.card_queries import get_cards_paginated, get_random_card_image, get_card_details_logic
+from .Db_queries.card_queries import get_cards_paginated, get_random_card_image, get_card_details_logic, \
+    get_card_image_from_sets
 from .Db_queries.set_queries import get_sets_logic
 from .db_connexion import close_db
 

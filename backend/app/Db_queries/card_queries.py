@@ -202,3 +202,34 @@ def get_card_details_logic(id_printing):
     return {
         'cardDetail': cardDetail
     }
+
+def get_card_image_from_sets(id_set):
+    conn = get_db()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+
+    try:
+        query = """
+                SELECT cp.image_url AS image
+                FROM Card_printing cp
+                JOIN Card_oracle co ON cp.id_oracle = co.id_oracle
+                JOIN Sets s ON s.id_set = cp.id_set
+                WHERE cp.image_url IS NOT NULL
+                    AND co.name NOT LIKE 'A-%%'
+                    AND co.name NOT LIKE '%%//%%'
+                    AND co.type_line NOT LIKE '%%Token%%'
+                    AND co.type_line NOT LIKE '%%Emblem%%'
+                    AND s.set_code = %s
+                ORDER BY RAND()
+                LIMIT 1;
+                """
+
+        cursor.execute(query, (id_set, ))
+        card = cursor.fetchone()
+
+    finally:
+        cursor.close()
+        conn.close()
+
+    return {
+        'image': card['image'] if card else None
+    }
