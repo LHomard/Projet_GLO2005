@@ -3,6 +3,7 @@
 import pymysql
 import json
 
+import requests
 from app.db_connexion import get_db
 
 
@@ -134,6 +135,32 @@ def get_relevant_rules(prompt):
         conn.commit()
 
         return cursor.fetchall()
+
+    finally:
+        cursor.close()
+        conn.close()
+
+def get_relevant_rulings_for_card(id_oracle):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        query = """
+            SELECT rulings_uri 
+            FROM Card_oracle 
+            WHERE id_oracle = %s
+            LIMIT 20
+        """
+        cursor.execute(query, (id_oracle,))
+        rulings = cursor.fetchone()
+
+        #REquest the ruling URI and then fetch the rulings on the api
+        if not rulings or not rulings[0]:
+            return []
+
+        response = requests.get(rulings[0])
+        data = response.json()
+        #Store each rulinggs of the card
+        return data.get("data", [])
 
     finally:
         cursor.close()

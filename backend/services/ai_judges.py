@@ -10,6 +10,7 @@ from app.Db_queries.ai_queries import save_discussion_history
 from app.Db_queries.ai_queries import get_discussion_from_history
 from app.Db_queries.ai_queries import get_all_discussion_from_history
 from app.Db_queries.ai_queries import get_relevant_rules
+from app.Db_queries.ai_queries import get_relevant_rulings_for_card
 
 chat_history = []
 
@@ -18,7 +19,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "get_card_info",
-            "description": "Look up MTG card text and rulings by name",
+            "description": "Look up MTG card text by name",
             "parameters": {
                 "type": "object",
                 "properties": {"card_name": {"type": "string"}},
@@ -35,6 +36,18 @@ tools = [
                 "type": "object",
                 "properties": {"query": {"type": "string"}},
                 "required": ["query"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_relevant_rulings_for_card",
+            "description": "When a card in play, look up MTG card rulings for this card",
+            "parameters": {
+                "type": "object",
+                "properties": {"id_oracle": {"type": "string"}},
+                "required": ["id_oracle"]
             }
         }
     }
@@ -59,7 +72,7 @@ def build_ai_messages(user_message, history, cards_from_frontend):
             if res["status"] == "exact":
                 cards.append(res["card"])
 
-    card_list = '\n'.join([f"- {c['name']}: {c.get('oracle_text')}" for c in cards])
+    card_list = '\n'.join([f"- {c['name']}: {c.get('oracle_text')} (id_oracle: {c.get('id_oracle')})" for c in cards])
 
     messages = [{"role": "system", "content": load_system_prompt() + "\n\nCards:\n" + card_list}]
 
@@ -80,9 +93,9 @@ def handle_tool_calls(tool_calls):
 
     for tool_call in tool_calls:
         args = json.loads(tool_call.function.arguments)
-        res = get_card_oracle_text(args.get("card_name"))
 
         if tool_call.function.name == "get_card_info":
+            res = get_card_oracle_text(args.get("card_name"))
             if res["status"] == "exact":
                 new_discovered_cards.append(res["card"])
                 content = json.dumps(res["card"])
@@ -95,10 +108,15 @@ def handle_tool_calls(tool_calls):
             rules = get_relevant_rules(args.get("query"))
             content = json.dumps(rules)
 
+        elif tool_call.function.name == "get_relevant_rulings_for_card":
+            rulings = get_relevant_rulings_for_card(args.get("id_oracle"))
+            content = json.dumps(rulings)
+
+
         messages_to_add.append({
             "tool_call_id": tool_call.id,
             "role": "tool",
-            "name": "get_card_info",
+            "name": tool_call.function.name,
             "content": content
         })
     return messages_to_add, new_discovered_cards
@@ -107,8 +125,6 @@ def handle_tool_calls(tool_calls):
 @judges_bp.route('/api/judges', methods=['POST'])
 def judges():
     data = request.get_json()
-    print('chatId reçu:', data.get('chatId'))
-    print('playerId reçu:', data.get('playerId'))
 
     messages = build_ai_messages(data.get('message'), data.get('history', []), data.get('cards', []))
 
