@@ -1,3 +1,5 @@
+
+
 import pymysql
 import json
 
@@ -113,6 +115,25 @@ def delete_chat(id_chat):
         cursor.execute(query, (id_chat,))
         conn.commit()
         return cursor.rowcount
+
+    finally:
+        cursor.close()
+        conn.close()
+
+def get_relevant_rules(prompt):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        query = """
+            SELECT rule_number, text, example 
+            FROM rules 
+            WHERE text LIKE %s OR keyword LIKE %s OR rule_number LIKE %s
+            LIMIT 20
+        """
+        cursor.execute(query, (prompt, prompt, prompt))
+        conn.commit()
+
+        return cursor.fetchall()
 
     finally:
         cursor.close()

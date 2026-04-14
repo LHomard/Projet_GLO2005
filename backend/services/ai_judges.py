@@ -9,23 +9,36 @@ from app.Db_queries.ai_queries import get_discussion_history
 from app.Db_queries.ai_queries import save_discussion_history
 from app.Db_queries.ai_queries import get_discussion_from_history
 from app.Db_queries.ai_queries import get_all_discussion_from_history
+from app.Db_queries.ai_queries import get_relevant_rules
 
-chat_history = [
+chat_history = []
 
-]
-
-tools = [{
-    "type": "function",
-    "function": {
-        "name": "get_card_info",
-        "description": "Look up MTG card text and rulings by name",
-        "parameters": {
-            "type": "object",
-            "properties": {"card_name": {"type": "string"}},
-            "required": ["card_name"]
+tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "get_card_info",
+            "description": "Look up MTG card text and rulings by name",
+            "parameters": {
+                "type": "object",
+                "properties": {"card_name": {"type": "string"}},
+                "required": ["card_name"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_relevant_rules",
+            "description": "Search the official Magic: The Gathering comprehensive rules by keyword or topic",
+            "parameters": {
+                "type": "object",
+                "properties": {"query": {"type": "string"}},
+                "required": ["query"]
+            }
         }
     }
-}]
+]
 
 judges_bp = Blueprint('judges', __name__)
 
@@ -69,13 +82,18 @@ def handle_tool_calls(tool_calls):
         args = json.loads(tool_call.function.arguments)
         res = get_card_oracle_text(args.get("card_name"))
 
-        if res["status"] == "exact":
-            new_discovered_cards.append(res["card"])
-            content = json.dumps(res["card"])
-        elif res["status"] == "ambiguous":
-            content = f"Ambiguous. Options: {', '.join(res['names'])}."
-        else:
-            content = "Card not found."
+        if tool_call.function.name == "get_card_info":
+            if res["status"] == "exact":
+                new_discovered_cards.append(res["card"])
+                content = json.dumps(res["card"])
+            elif res["status"] == "ambiguous":
+                content = f"Ambiguous. Options: {', '.join(res['names'])}."
+            else:
+                content = "Card not found."
+
+        elif tool_call.function.name == "get_relevant_rules":
+            rules = get_relevant_rules(args.get("query"))
+            content = json.dumps(rules)
 
         messages_to_add.append({
             "tool_call_id": tool_call.id,

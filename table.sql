@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS Card_oracle (
     cmc INT,
     power VARCHAR(10),
     toughness VARCHAR(10),
-    type_line TEXT
+    type_line TEXT,
+    rulings_uri TEXT
 );
 
 CREATE TABLE IF NOT EXISTS Sets (
@@ -63,6 +64,9 @@ CREATE TABLE IF NOT EXISTS Legality (
 
 CREATE TABLE IF NOT EXISTS Players (
     id_player INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    gender VARCHAR(50) NOT NULL,
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR (255) NOT NULL UNIQUE,
     age INT NOT NULL,
@@ -71,55 +75,14 @@ CREATE TABLE IF NOT EXISTS Players (
 );
 
 
--- Trigger permettant de vérifier l'âge ainsi que la validité du email lors de la création d'un joueur
-DELIMITER $$
-
-CREATE TRIGGER before_insert_player
-BEFORE INSERT ON Players
-FOR EACH ROW
-BEGIN
-    IF NEW.age < 1 OR NEW.age > 100 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Invalid age: must be between 1 and 100.';
-    END IF;
-
-    IF NEW.username = '' OR NEW.username IS NULL THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Username cannot be empty.';
-    END IF;
-
-    IF NEW.email NOT REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Invalid email format.';
-    END IF;
-END$$
-
-DELIMITER ;
-
--- Trigger permettant de vérifier l'âge ainsi que la validité du email lors de la mise à jour d'un joueur
-DELIMITER $$
-
-CREATE TRIGGER before_update_player
-BEFORE UPDATE ON Players
-FOR EACH ROW
-BEGIN
-    IF NEW.age < 1 OR NEW.age > 120 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Invalid age: must be between 1 and 120.';
-    END IF;
-
-    IF NEW.username = '' OR NEW.username IS NULL THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Username cannot be empty.';
-    END IF;
-
-    IF NEW.email NOT REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Invalid email format.';
-    END IF;
-END$$
-
-DELIMITER ;
+CREATE TABLE IF NOT EXISTS Ai_chats (
+    id_chat INT AUTO_INCREMENT PRIMARY KEY,
+    id_player INT NOT NULL,
+    title VARCHAR(255) DEFAULT 'New Chat',
+    chats JSON,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_player) REFERENCES Players(id_player) ON DELETE CASCADE
+);
 
 
 CREATE TABLE IF NOT EXISTS Decks (
@@ -141,7 +104,103 @@ CREATE TABLE IF NOT EXISTS Deck_composition (
     PRIMARY KEY (id_deck, id_printing)
 );
 
+CREATE TABLE rules (
+    id          SERIAL PRIMARY KEY,
+    rule_number VARCHAR(20),
+    parent_rule VARCHAR(20),
+    keyword     VARCHAR(100),
+    text        TEXT,
+    example     TEXT
+);
+
+
+-- Trigger permettant de vérifier l'âge ainsi que la validité du email lors de la création d'un player
+DELIMITER $$
+
+CREATE TRIGGER before_insert_player
+BEFORE INSERT ON Players
+FOR EACH ROW
+BEGIN
+
+    -- Vérifier que l'âge est entre 1 et 100
+    IF NEW.age < 1 OR NEW.age > 100 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid age: must be between 1 and 100.';
+    END IF;
+
+     -- Vérifier que les champs sont présents
+    IF NEW.username IS NULL OR TRIM(NEW.username) = '' OR
+       NEW.email IS NULL OR TRIM(NEW.email) = '' OR
+       NEW.password_hash IS NULL OR NEW.password_hash = '' OR
+       NEW.age IS NULL THEN
+
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'All fields are required.';
+    END IF;
+
+    -- Vérifier que le email
+    IF NEW.email NOT REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid email format.';
+    END IF;
+
+    -- Vérifier email unique sauf lui-même
+    IF EXISTS (
+        SELECT 1 FROM Players
+        WHERE email = NEW.email AND id_player != NEW.id_player
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Email already in use.';
+    END IF;
+END$$
+
+DELIMITER ;
+
+-- Trigger permettant de vérifier l'âge ainsi que la validité du email lors de la mise à jour de la table players
+DELIMITER $$
+
+CREATE TRIGGER before_update_players
+BEFORE UPDATE ON Players
+FOR EACH ROW
+BEGIN
+    -- Vérifier que l'âge est entre 1 et 100
+    IF NEW.age < 1 OR NEW.age > 100 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid age: must be between 1 and 100.';
+    END IF;
+
+     -- Vérifier que les champs sont présents
+    IF NEW.username IS NULL OR TRIM(NEW.username) = '' OR
+       NEW.email IS NULL OR TRIM(NEW.email) = '' OR
+       NEW.password_hash IS NULL OR NEW.password_hash = '' OR
+       NEW.age IS NULL THEN
+
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'All fields are required.';
+    END IF;
+
+    -- Vérifier que le email
+    IF NEW.email NOT REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid email format.';
+    END IF;
+
+    -- Vérifier email unique sauf lui-même
+    IF EXISTS (
+        SELECT 1 FROM Players
+        WHERE email = NEW.email AND id_player != NEW.id_player
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Email already in use.';
+    END IF;
+
+END$$
+
+DELIMITER ;
+
 -- Trigger called before deck creation to verify its legality
+DELIMITER $$
+
 CREATE TRIGGER before_insert_deck_composition
 BEFORE INSERT ON Deck_composition
 FOR EACH ROW
@@ -151,12 +210,12 @@ BEGIN
     DECLARE max_qty INT;
     DECLARE current_qty INT;
 
-    -- Retrieves deck format
+    -- Aller chercher le format des cartes
     SELECT id_format INTO format_id
     FROM Decks
     WHERE id_deck = NEW.id_deck;
 
-    -- Verifies deck legality
+    -- Vérifier la légalité de la carte
     SELECT l.status INTO card_status
     FROM Legality l
     JOIN Card_printing cp ON l.id_oracle = cp.id_oracle
@@ -168,7 +227,7 @@ BEGIN
         SET MESSAGE_TEXT = 'This card is not legal in this deck format.';
     END IF;
 
-    -- Verifies if card quantity is legal
+    -- Vérifier que le nombre de carte dans le deck est légal
     SELECT max_card_quantity INTO max_qty
     FROM Formats
     WHERE id_format = format_id;
@@ -184,15 +243,3 @@ BEGIN
 END$$
 
 DELIMITER ;
-
-
-
-CREATE TABLE IF NOT EXISTS Ai_chats (
-    id_chat INT AUTO_INCREMENT PRIMARY KEY,
-    id_player INT NOT NULL,
-    title VARCHAR(255) DEFAULT 'New Chat',
-    chats JSON,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_player) REFERENCES Players(id_player) ON DELETE CASCADE
-);
-
