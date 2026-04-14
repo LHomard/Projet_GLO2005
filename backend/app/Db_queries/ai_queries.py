@@ -25,7 +25,6 @@ def get_discussion_history(id_player):
         conn.close()
 
 
-
 def save_discussion_history(id_player, history, id_chat=None):
     conn = get_db()
     cursor = conn.cursor()
@@ -76,6 +75,7 @@ def get_all_discussion_from_history(id_player):
     finally:
         cursor.close()
         conn.close()
+
 
 def get_discussion_from_history(id_chat):
     conn = get_db()

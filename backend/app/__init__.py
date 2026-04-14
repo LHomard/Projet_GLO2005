@@ -103,15 +103,12 @@ def create_app():
         email = (data.get('email') or '').strip()
         password = data.get('password') or ''
         age = data.get('age')
-
-        if not username or not email or not password or not age:
-            return jsonify({'error': 'All fields are required.'}), 400
-
-        if get_user_by_email(email):
-            return jsonify({'error': 'Email already in use.'}), 409
+        first_name = data.get('first_name')
+        last_name = data.get('last_name')
+        gender = data.get('gender')
 
         try:
-            insert_user(username, email, age, password)
+            insert_user(username, email, age, password, first_name, last_name, gender)
         except pymysql.err.OperationalError as e:
             return jsonify({'error': e.args[1]}), 400
 

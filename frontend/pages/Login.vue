@@ -7,6 +7,10 @@ const router = useRouter()
 
 const mode = ref('login')
 
+const first_name = ref('')
+const last_name = ref('')
+const gender = ref('')
+const other_gender = ref('')
 const email = ref('')
 const password = ref('')
 const username = ref('')
@@ -77,12 +81,17 @@ async function signup() {
   successMessage.value = ''
   isLoading.value = true
 
+  const finalGender = gender.value === 'other' ? other_gender.value : gender.value
+
   try {
     const response = await fetch('http://localhost:5000/api/register', {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        first_name: first_name.value,
+        last_name: last_name.value,
+        gender: finalGender,
         username: username.value,
         email: email.value,
         age: age.value,
@@ -112,9 +121,11 @@ async function signup() {
 </script>
 
 <template>
-  <section class="min-h-screen bg-black flex items-center justify-center px-6 py-8">
+  <section
+    class="h-full min-h-screen bg-black flex items-center justify-center px-6 py-8 overflow-hidden!"
+  >
     <div class="w-full max-w-md">
-      <div class="w-full rounded-lg shadow dark:border bg-gray-800/50 border-gray-800/90">
+      <div class="w-full rounded-lg shadow dark:border bg-gray-800/50 border-gray-800/90 mb-16">
         <!-- Toggle tabs -->
         <div class="flex rounded-t-lg overflow-hidden border-b border-gray-700">
           <button
@@ -194,6 +205,68 @@ async function signup() {
 
           <!-- SIGNUP FORM -->
           <form v-else class="space-y-4 md:space-y-6" @submit.prevent="signup">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block mb-2 text-sm font-medium text-white"> First name </label>
+                <input
+                  v-model="first_name"
+                  type="text"
+                  placeholder="John"
+                  class="rounded-lg focus:outline-none focus:ring-2 block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label class="block mb-2 text-sm font-medium text-white"> Last name </label>
+                <input
+                  v-model="last_name"
+                  type="text"
+                  placeholder="Doe"
+                  class="rounded-lg focus:outline-none focus:ring-2 block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label for="age" class="block mb-2 text-sm font-medium text-white"> Age </label>
+                <input
+                  v-model="age"
+                  type="number"
+                  id="age"
+                  placeholder="25"
+                  min="1"
+                  max="120"
+                  class="rounded-lg focus:outline-none focus:ring-2 block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label class="block mb-2 text-sm font-medium text-white"> Gender </label>
+                <select
+                  v-model="gender"
+                  :class="gender === '' ? 'text-gray-400' : 'text-white'"
+                  class="rounded-lg focus:outline-none focus:ring-2 block w-full p-2.5 bg-gray-700 border-gray-600 focus:ring-blue-500 appearance-none"
+                >
+                  <option value="" disabled selected>Select</option>
+                  <option value="male" class="text-white">Male</option>
+                  <option value="female" class="text-white">Female</option>
+                  <option value="non_binary" class="text-white">Non-binary</option>
+                  <option value="other" class="text-white">Other</option>
+                  <option value="prefer_not_say" class="text-white">N/A</option>
+                </select>
+              </div>
+            </div>
+
+            <div v-if="gender === 'other'" class="mt-2">
+              <input
+                v-model="other_gender"
+                type="text"
+                placeholder="Please specify"
+                class="rounded-lg focus:outline-none focus:ring-2 block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500"
+              />
+            </div>
+
             <div>
               <label for="username" class="block mb-2 text-sm font-medium text-white">
                 Username
@@ -207,6 +280,7 @@ async function signup() {
                 required
               />
             </div>
+
             <div>
               <label for="signup-email" class="block mb-2 text-sm font-medium text-white">
                 Email
@@ -216,19 +290,6 @@ async function signup() {
                 type="email"
                 id="signup-email"
                 placeholder="name@company.com"
-                class="rounded-lg focus:outline-none focus:ring-2 block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
-                required
-              />
-            </div>
-            <div>
-              <label for="age" class="block mb-2 text-sm font-medium text-white"> Age </label>
-              <input
-                v-model="age"
-                type="number"
-                id="age"
-                placeholder="25"
-                min="1"
-                max="120"
                 class="rounded-lg focus:outline-none focus:ring-2 block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
                 required
               />
