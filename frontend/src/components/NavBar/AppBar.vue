@@ -17,10 +17,10 @@ const auth = inject('auth')
 const displayName = computed(() => auth.currentUser.value?.username ?? 'Guest')
 
   const navigation = [
-    { name: 'Home', href: '/', current: true },
-    { name: 'Cards', href: '/cards', current: false },
-    { name: 'Deck building', href: '/decks', current: false },
-    { name: 'The Oracle', href: '/chat', current: false },
+    { name: 'Home', href: '/'},
+    { name: 'Cards', href: '/cards'},
+    { name: 'Deck Building', href: '/decks'},
+    { name: 'The Oracle', href: '/chat'},
   ]
 
 
@@ -54,7 +54,7 @@ async function handleLogout() {
                 :key="item.name"
                 :to="item.href"
                 class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white"
-                active-class="bg-gray-950/50 text-white"
+                exact-active-class="bg-gray-950/50 text-white"
               >
                 {{ item.name }}
               </RouterLink>
@@ -65,9 +65,10 @@ async function handleLogout() {
           class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0"
         >
           <RouterLink
+            v-if="!auth.isLoggedIn.value"
             to="/login"
             class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white"
-            active-class="bg-gray-950/50 text-white"
+            exact-active-class="bg-gray-950/50 text-white"
           >
             Log in
           </RouterLink>
@@ -78,7 +79,7 @@ async function handleLogout() {
             >
               <span class="sr-only">Open user menu</span>
               <div
-                class="flex size-8 items-center justify-center rounded-xl bg-indigo-600 text-xs font-semibold text-white outline -outline-offset-1 outline-white/10"
+                class="flex px-3 py-1 items-center justify-center rounded-xl bg-indigo-600 text-xs font-semibold text-white outline -outline-offset-1 outline-white/10"
               >
                 {{ displayName }}
               </div>
@@ -111,9 +112,6 @@ async function handleLogout() {
               </MenuItems>
             </transition>
           </Menu>
-          <div class="px-3 py-2 text-sm font-medium text-gray-300">
-            {{ displayName }}
-          </div>
         </div>
       </div>
     </div>

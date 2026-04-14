@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue'
 
 const currentUser = ref(null)
-const isLoggedIn = computed(() => currentUser.value !== null)
+const isLoggedIn = computed(() => !!currentUser.value)
 
 function login(user) {
   currentUser.value = user

@@ -21,7 +21,7 @@ const routes = [
   },
   {
     path: '/decks',
-    name: 'Deck building',
+    name: 'DeckBuilding',
     component: Decks,
     meta: { requiresAuth: true},
   },

@@ -13,11 +13,34 @@ const username = ref('')
 const age = ref('')
 
 const errorMessage = ref('')
+const successMessage = ref('')
 const isLoading = ref(false)
+
+let messageTimeout = null
+
+function showMessage(type, message, duration) {
+  if (messageTimeout) {
+    clearTimeout(messageTimeout)
+  }
+
+  if (type === 'error') {
+    errorMessage.value = message
+    successMessage.value = ''
+  } else {
+    successMessage.value = message
+    errorMessage.value = ''
+  }
+
+  messageTimeout = setTimeout(() => {
+    errorMessage.value = ''
+    successMessage.value = ''
+  }, duration)
+}
 
 function switchMode(newMode) {
   mode.value = newMode
   errorMessage.value = ''
+  successMessage.value = ''
 }
 
 async function login() {
@@ -35,14 +58,14 @@ async function login() {
     const data = await response.json().catch(() => ({}))
 
     if (!response.ok) {
-      errorMessage.value = data.error || 'Login failed.'
+      showMessage('error', data.error || 'Login failed.', 5000)
       return
     }
 
     auth.login(data.user)
-    await router.push({ name: 'Deck building' })
+    await router.push({ name: 'DeckBuilding' })
   } catch (error) {
-    errorMessage.value = 'Server unavailable.'
+    showMessage('error', 'Server unavailable.', 5000)
     console.error(error)
   } finally {
     isLoading.value = false
@@ -51,6 +74,7 @@ async function login() {
 
 async function signup() {
   errorMessage.value = ''
+  successMessage.value = ''
   isLoading.value = true
 
   try {
@@ -69,15 +93,18 @@ async function signup() {
     const data = await response.json().catch(() => ({}))
 
     if (!response.ok) {
-      errorMessage.value = data.error || 'Sign up failed.'
+      showMessage('error', data.error || 'Sign up failed.', 5000)
       return
     }
 
-    auth.login(data.user)
-    await router.push({ name: 'Deck building' })
+    username.value = ''
+    age.value = ''
+    password.value = ''
+    mode.value = 'login'
+    showMessage('success', 'Account created successfully. You can now log in.', 3000)
   } catch (error) {
-    errorMessage.value = 'Server unavailable.'
-    console.error(error)
+    console.error('Signup error:', error)
+    showMessage('error', 'Server unavailable.', 5000)
   } finally {
     isLoading.value = false
   }
@@ -149,7 +176,13 @@ async function signup() {
                 required
               />
             </div>
-            <p v-if="errorMessage" class="text-sm text-red-400">{{ errorMessage }}</p>
+            <p v-if="errorMessage" class="text-sm text-red-400">
+              {{ errorMessage }}
+            </p>
+
+            <p v-if="successMessage" class="text-sm text-green-400">
+              {{ successMessage }}
+            </p>
             <button
               :disabled="isLoading"
               type="submit"

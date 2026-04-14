@@ -83,7 +83,14 @@ def create_app():
         if check_user_password(email, password):
             user = get_user_by_email(email)
             login_user(user)
-            return jsonify({'message': 'Login successful'}), 200
+            return jsonify({
+                'message': 'Login successful',
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email
+                }
+            }), 200
 
         return jsonify({'error': 'Invalid email or password'}), 403
 
@@ -100,7 +107,6 @@ def create_app():
         if not username or not email or not password or not age:
             return jsonify({'error': 'All fields are required.'}), 400
 
-
         if get_user_by_email(email):
             return jsonify({'error': 'Email already in use.'}), 409
 
@@ -109,10 +115,9 @@ def create_app():
         except pymysql.err.OperationalError as e:
             return jsonify({'error': e.args[1]}), 400
 
-        user = get_user_by_email(email)
-        login_user(user)
-
-        return jsonify({'message': 'Account created successfully.'}), 201
+        return jsonify({
+            'message': 'Account created successfully.'
+        }), 201
 
 
     @app.route('/api/decks')
