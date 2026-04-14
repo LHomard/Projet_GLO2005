@@ -1,5 +1,6 @@
 import os
 import time
+from datetime import date
 
 import ijson
 import pymysql
@@ -369,6 +370,35 @@ def populate_legalities(cards):
     finally:
         conn.close()
 
+def populate_players_table():
+    print("Populating Players table...")
+    conn = get_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT COUNT(*) FROM Players")
+            if cursor.fetchone()[0] > 0:
+                print("Table Players already has data!")
+                return
+
+            #Fake data used to pre-populate the database (all passwords are : 123)
+            players = [
+                ("Denis",   "denis@email.com", 25,  "$5$rounds=535000$GpwuUxg7m7tRcUmw$yQ6l7NZaJotP9kW6E/oesiYxsDAknSD0RhV9Aavrc46", date.today()),
+                ("Alice",   "alice@email.com", 20,  "$5$rounds=535000$GpwuUxg7m7tRcUmw$yQ6l7NZaJotP9kW6E/oesiYxsDAknSD0RhV9Aavrc46", date.today()),
+                ("Bob",     "bob@email.com",   33,  "$5$rounds=535000$GpwuUxg7m7tRcUmw$yQ6l7NZaJotP9kW6E/oesiYxsDAknSD0RhV9Aavrc46", date.today()),
+                ("Marie",   "marie@email.com", 40,  "$5$rounds=535000$GpwuUxg7m7tRcUmw$yQ6l7NZaJotP9kW6E/oesiYxsDAknSD0RhV9Aavrc46", date.today()),
+            ]
+
+            cursor.executemany(
+                "INSERT INTO Players (username, email, age, password_hash, register_date) VALUES (%s, %s, %s, %s, %s)",
+                players
+            )
+
+            conn.commit()
+            print("Table Players populated!")
+
+    finally:
+        conn.close()
+
 
 def run_full_population():
     populate_sets()
@@ -389,6 +419,7 @@ def run_full_population():
     default_data = fetch_scryfall_stream("default_cards")
     populate_card_printing(default_data)
 
+    populate_players_table()
 
 if __name__ == "__main__":
     run_full_population()

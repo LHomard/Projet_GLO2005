@@ -7,3 +7,4 @@ requests
 groq
 dotenv
 ijson
+flask_login

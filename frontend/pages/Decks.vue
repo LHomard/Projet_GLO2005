@@ -1,12 +1,14 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import Deck from '@/components/Decks/Deck.vue'
 import DeckPlaceHolder from '@/components/Decks/DeckPlaceHolder.vue'
 import CreateDeckModal from '@/components/Decks/CreateDeckModal.vue'
 
 const showCreateDeckModal = ref(false)
+const decks = ref([])
 
-const fakeDecks = ref([
+//TODO: Retirer les fakes decks quand implementation terminée
+const fakedecks = ref([
   {
     name: 'Mono-Red Aggro',
     cards: [
@@ -33,38 +35,82 @@ const fakeDecks = ref([
     ],
   },
   {
-    name: 'Blue Control',
-    cards: [
-      {
-        name: 'Counterspell',
-        image:
-          'https://c1.scryfall.com/file/scryfall-cards/normal/front/f/1/f129eafc-b42c-4d39-8044-31888a35f22f.jpg?1562897992',
-        colors: ['Blue'],
-      },
-      {
-        name: 'Island',
-        image:
-          'https://c1.scryfall.com/file/scryfall-cards/normal/front/0/f/0f83a8e1-837e-45a2-a9a0-55fa53cb056b.jpg?1562812236',
-        colors: ['Blue'],
-      },
-    ],
-  },
-  {
     name: 'Empty Deck',
     cards: [],
   },
 ])
 
-const createNewDeck = (deckData) => {
-  fakeDecks.value.push({
-    name: deckData.name,
-    format: deckData.format,
-    commanderColors: deckData.commanderColors,
-    cards: [],
-  })
+const createNewDeck = async (deckData) => {
+  try {
+    const response = await fetch('http://localhost:5000/api/decks', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
 
-  showCreateDeckModal.value = false
+      body: JSON.stringify({
+        deck_name: deckData.name,
+        format_name: deckData.format,
+        description: deckData.description ?? '',
+      }),
+    })
+
+    if (!response.ok) {
+      const text = await response.text()
+      console.error('ERROR RESPONSE:', text)
+      return
+    }
+
+    const newDeck = await response.json()
+
+    decks.value.push({
+      id: newDeck.id_deck,
+      name: newDeck.nom,
+      format: newDeck.id_format,
+      cards: [],
+    })
+
+    showCreateDeckModal.value = false
+  } catch (error) {
+    console.error('ERROR while creating new deck:', error)
+  }
 }
+
+const deleteDeck = async (deckId) => {
+  try {
+    const response = await fetch(`http://localhost:5000/api/decks/${deckId}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    })
+
+    if (!response.ok) {
+      const text = await response.text()
+      console.error('DELETE ERROR:', text)
+      return
+    }
+
+    decks.value = decks.value.filter((deck) => deck.id !== deckId)
+  } catch (error) {
+    console.error('ERROR deleting deck:', error)
+  }
+}
+
+const fetchDecks = async () => {
+  const response = await fetch('http://localhost:5000/api/decks', {
+    credentials: 'include',
+  })
+  if (!response.ok) return
+  const data = await response.json()
+  decks.value = data.map((d) => ({
+    id: d.id,
+    name: d.name,
+    format: d.format,
+    cards: [],
+  }))
+}
+
+onMounted(fetchDecks)
 </script>
 
 <template>
@@ -73,7 +119,7 @@ const createNewDeck = (deckData) => {
 
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <DeckPlaceHolder @create="showCreateDeckModal = true" />
-      <Deck v-for="deck in fakeDecks" :key="deck.name" :deck="deck" />
+      <Deck v-for="deck in decks" :key="deck.name" :deck="deck" @delete_deck="deleteDeck" />
     </div>
 
     <CreateDeckModal

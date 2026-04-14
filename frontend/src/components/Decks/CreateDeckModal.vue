@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, computed, watch } from 'vue'
+import { reactive, computed, watch, ref, onMounted } from 'vue'
 import whiteIcon from '@/assets/white.png'
 import blueIcon from '@/assets/blue.png'
 import blackIcon from '@/assets/black.png'
@@ -19,18 +19,19 @@ const form = reactive({
   commanderColors: [],
 })
 
-const formatOptions = ['Standard', 'Modern', 'Legacy', 'Vintage', 'Pioneer', 'Commander']
+const iconMap = {
+  W: whiteIcon,
+  U: blueIcon,
+  B: blackIcon,
+  R: redIcon,
+  G: greenIcon,
+  C: colorlessIcon,
+}
 
-const mtgColors = [
-  { label: 'White', value: 'W', icon: whiteIcon },
-  { label: 'Blue', value: 'U', icon: blueIcon },
-  { label: 'Black', value: 'B', icon: blackIcon },
-  { label: 'Red', value: 'R', icon: redIcon },
-  { label: 'Green', value: 'G', icon: greenIcon },
-  { label: 'Colorless', value: 'C', icon: colorlessIcon },
-]
+const mtgColors = ref([])
+const formatOptions = ref([])
 
-const isCommander = computed(() => form.format === 'Commander')
+const isCommander = computed(() => form.format === 'commander')
 
 watch(
   () => form.format,
@@ -38,7 +39,7 @@ watch(
     if (newFormat !== 'Commander') {
       form.commanderColors = []
     }
-  }
+  },
 )
 
 const submitForm = () => {
@@ -52,6 +53,27 @@ const submitForm = () => {
   form.format = ''
   form.commanderColors = []
 }
+
+const fetchColors = async () => {
+  const response = await fetch('http://localhost:5000/api/colors')
+  const data = await response.json()
+  mtgColors.value = data.map((c) => ({
+    label: c.name,
+    value: c.symbol,
+    icon: iconMap[c.symbol] ?? null,
+  }))
+}
+
+const fetchFormats = async () => {
+  const response = await fetch('http://localhost:5000/api/formats')
+  const data = await response.json()
+  formatOptions.value = data
+}
+
+onMounted(async () => {
+  await fetchColors()
+  await fetchFormats()
+})
 </script>
 
 <template>
@@ -79,18 +101,9 @@ const submitForm = () => {
 
           <div class="form-group">
             <label for="deck-format">Format</label>
-            <select
-              id="deck-format"
-              v-model="form.format"
-              class="form-input"
-              required
-            >
+            <select id="deck-format" v-model="form.format" class="form-input" required>
               <option disabled value="">Select a format</option>
-              <option
-                v-for="format in formatOptions"
-                :key="format"
-                :value="format"
-              >
+              <option v-for="format in formatOptions" :key="format" :value="format">
                 {{ format }}
               </option>
             </select>
@@ -98,20 +111,10 @@ const submitForm = () => {
 
           <div v-if="isCommander" class="form-group">
             <label>Commander colors</label>
-            <p class="helper-text">
-                Select your commander's color identity
-            </p>
+            <p class="helper-text">Select your commander's color identity</p>
             <div class="checkbox-row">
-              <label
-                v-for="color in mtgColors"
-                :key="color.value"
-                class="checkbox-item"
-              >
-                <input
-                  v-model="form.commanderColors"
-                  type="checkbox"
-                  :value="color.value"
-                />
+              <label v-for="color in mtgColors" :key="color.value" class="checkbox-item">
+                <input v-model="form.commanderColors" type="checkbox" :value="color.value" />
                 <img :src="color.icon" :alt="color.label" class="color-icon" />
                 <span>{{ color.label }}</span>
               </label>
@@ -119,12 +122,8 @@ const submitForm = () => {
           </div>
 
           <div class="button-row">
-            <button type="button" class="secondary-btn" @click="$emit('close')">
-              Cancel
-            </button>
-            <button type="submit" class="primary-btn">
-              Create deck
-            </button>
+            <button type="button" class="secondary-btn" @click="$emit('close')">Cancel</button>
+            <button type="submit" class="primary-btn">Create deck</button>
           </div>
         </form>
       </div>
@@ -141,11 +140,7 @@ const submitForm = () => {
   padding: clamp(1rem, 2vw, 2rem);
   border-radius: 20px;
   backdrop-filter: blur(12px);
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.05) 0%,
-    rgba(255, 255, 255, 0.02) 100%
-  );
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
 }
@@ -236,7 +231,9 @@ const submitForm = () => {
   border-radius: 10px;
   border: none;
   cursor: pointer;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .primary-btn {
