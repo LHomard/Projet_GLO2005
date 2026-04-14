@@ -332,7 +332,7 @@ def populate_legalities(cards):
             cursor.execute("SELECT id_format, format_name FROM Formats")
             format_map = {name: id_f for id_f, name in cursor.fetchall()}
 
-            sql = """
+            sql = """ 
                 INSERT IGNORE INTO Legality (id_oracle, id_format, status)
                 VALUES (%s, %s, %s)
             """
@@ -382,14 +382,14 @@ def populate_players_table():
 
             #Fake data used to pre-populate the database (all passwords are : 123)
             players = [
-                ("Denis",   "denis@email.com", 25,  "$5$rounds=535000$GpwuUxg7m7tRcUmw$yQ6l7NZaJotP9kW6E/oesiYxsDAknSD0RhV9Aavrc46", date.today()),
-                ("Alice",   "alice@email.com", 20,  "$5$rounds=535000$GpwuUxg7m7tRcUmw$yQ6l7NZaJotP9kW6E/oesiYxsDAknSD0RhV9Aavrc46", date.today()),
-                ("Bob",     "bob@email.com",   33,  "$5$rounds=535000$GpwuUxg7m7tRcUmw$yQ6l7NZaJotP9kW6E/oesiYxsDAknSD0RhV9Aavrc46", date.today()),
-                ("Marie",   "marie@email.com", 40,  "$5$rounds=535000$GpwuUxg7m7tRcUmw$yQ6l7NZaJotP9kW6E/oesiYxsDAknSD0RhV9Aavrc46", date.today()),
+                ("Denis", "Lee", "Den24",  "denis@email.com", 25,  "male", "$5$rounds=535000$GpwuUxg7m7tRcUmw$yQ6l7NZaJotP9kW6E/oesiYxsDAknSD0RhV9Aavrc46", date.today()),
+                ("Alice", "Richard", "ALRich",  "alice@email.com", 20, "non-binary", "$5$rounds=535000$GpwuUxg7m7tRcUmw$yQ6l7NZaJotP9kW6E/oesiYxsDAknSD0RhV9Aavrc46", date.today()),
+                ("Bob",  "Goulet", "BoGOUL",   "bob@email.com",   33, "not-specified", "$5$rounds=535000$GpwuUxg7m7tRcUmw$yQ6l7NZaJotP9kW6E/oesiYxsDAknSD0RhV9Aavrc46", date.today()),
+                ("Marie", "Royer", "MaRoY",  "marie@email.com", 40,  "female", "$5$rounds=535000$GpwuUxg7m7tRcUmw$yQ6l7NZaJotP9kW6E/oesiYxsDAknSD0RhV9Aavrc46", date.today()),
             ]
 
             cursor.executemany(
-                "INSERT INTO Players (username, email, age, password_hash, register_date) VALUES (%s, %s, %s, %s, %s)",
+                "INSERT INTO Players (first_name, last_name, username, email, age, gender, password_hash, register_date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
                 players
             )
 

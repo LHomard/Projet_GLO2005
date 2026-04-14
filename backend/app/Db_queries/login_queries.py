@@ -4,7 +4,7 @@ from flask_login import UserMixin
 
 from app.db_connexion import get_db
 
-#User class to use flask log in
+#Classe user utilisé pour le log in de flask
 class User(UserMixin):
     def __init__(self, id_player, username, email):
         self.id = id_player
@@ -18,14 +18,14 @@ def hash_password(password):
 def verify_password(plain_password, hashed_password):
     return sha256_crypt.verify(plain_password, hashed_password)
 
-def insert_user(username, email, age, password):
+def insert_user(username, email, age, password, first_name, last_name, gender):
     hashed_password = hash_password(password)
     connection = get_db()
     try:
         with connection.cursor() as cursor:
             cursor.execute(
-                "INSERT INTO Players (register_date, username, email, age, password_hash) VALUES (%s, %s, %s, %s, %s)",
-                (date.today(), username, email, age, hashed_password)
+                "INSERT INTO Players (register_date, username, email, age, password_hash, first_name, last_name, gender) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                (date.today(), username, email, age, hashed_password, first_name, last_name, gender)
             )
             connection.commit()
     finally:
