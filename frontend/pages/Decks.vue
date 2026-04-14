@@ -5,8 +5,10 @@ import DeckPlaceHolder from '@/components/Decks/DeckPlaceHolder.vue'
 import CreateDeckModal from '@/components/Decks/CreateDeckModal.vue'
 
 const showCreateDeckModal = ref(false)
+const decks = ref([])
 
-const decks = ref([
+//TODO: Retirer les fakes decks quand implementation terminée
+const fakedecks = ref([
   {
     name: 'Mono-Red Aggro',
     cards: [
