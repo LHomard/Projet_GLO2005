@@ -6,10 +6,9 @@ def get_all_colors_logic():
 
     try:
         with conn.cursor() as cursor:
-            cursor.execute("SELECT color_name FROM Colors")
-            formats = cursor.fetchall()
-
-            return [f[0] for f in formats]
+            cursor.execute("SELECT color_name, color_symbol FROM Colors")
+            colors = cursor.fetchall()
+            return [{'name': c[0], 'symbol': c[1]} for c in colors]
 
     finally:
         conn.close()

@@ -1,7 +1,15 @@
 from passlib.hash import sha256_crypt
 from datetime import date
+from flask_login import UserMixin
 
 from app.db_connexion import get_db
+
+#User class to use flask log in
+class User(UserMixin):
+    def __init__(self, id_player, username, email):
+        self.id = id_player
+        self.username = username
+        self.email = email
 
 
 def hash_password(password):
@@ -10,14 +18,16 @@ def hash_password(password):
 def verify_password(plain_password, hashed_password):
     return sha256_crypt.verify(plain_password, hashed_password)
 
-def insert_user(username, email, password):
+def insert_user(username, email, age, password):
     hashed_password = hash_password(password)
     connection = get_db()
     try:
         with connection.cursor() as cursor:
-            request = """INSERT INTO Players (register_date, username, email, password_hash) VALUES ('{}', '{}', '{}', '{}')""".format(
-                date.today(), username, email, hashed_password)
-            cursor.execute(request)
+            cursor.execute(
+                "INSERT INTO Players (register_date, username, email, age, password_hash) VALUES (%s, %s, %s, %s, %s)",
+                (date.today(), username, email, age, hashed_password)
+            )
+            connection.commit()
     finally:
         connection.close()
 
@@ -25,18 +35,46 @@ def check_user_password(email, password):
     connection = get_db()
     try:
         with connection.cursor() as cursor:
-            request = """SELECT id_player, username, email, password_hash FROM Players WHERE email = '{}'""".format(email)
-            cursor.execute(request)
+            cursor.execute(
+                "SELECT password_hash FROM Players WHERE email = %s",
+                (email,)
+            )
             result = cursor.fetchone()
 
-            user_id, username, email, hashed_password = result
-            if verify_password(password, hashed_password):
-                return {'id': user_id,
-                        'username': username,
-                        'email': email,
-                        }
-            else:
-                return None
+            if result is None:
+                return False
+
+            return verify_password(password, result[0])
     finally:
         connection.close()
 
+
+def get_user_by_email(email):
+    connection = get_db()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT id_player, username, email FROM Players WHERE email = %s",
+                (email,)
+            )
+            result = cursor.fetchone()
+            if result is None:
+                return None
+            return User(result[0], result[1], result[2])
+    finally:
+        connection.close()
+
+def get_user_by_id(user_id):
+    connection = get_db()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT id_player, username, email FROM Players WHERE id_player = %s",
+                (user_id,)
+            )
+            result = cursor.fetchone()
+            if result is None:
+                return None
+            return User(result[0], result[1], result[2])
+    finally:
+        connection.close()

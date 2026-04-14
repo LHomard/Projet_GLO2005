@@ -3,6 +3,31 @@ from datetime import datetime
 from app.db_connexion import get_db
 
 
+def get_deck_by_user_id_logic(user_id):
+    conn = get_db()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT id_deck, deck_name, id_format, date_creation
+                FROM Decks
+                WHERE id_user = %s
+            """, (user_id,))
+
+            decks = cursor.fetchall()
+
+            return [
+                {
+                    "id": d[0],
+                    "name": d[1],
+                    "format": d[2],
+                    "created_at": d[3].isoformat() if d[3] else None
+                }
+                for d in decks
+            ]
+    finally:
+        conn.close()
+
+
 def get_deck_by_id_logic(deck_id):
     conn = get_db()
 

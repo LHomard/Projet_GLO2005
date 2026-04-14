@@ -71,6 +71,57 @@ CREATE TABLE IF NOT EXISTS Players (
 );
 
 
+-- Trigger permettant de vérifier l'âge ainsi que la validité du email lors de la création d'un joueur
+DELIMITER $$
+
+CREATE TRIGGER before_insert_player
+BEFORE INSERT ON Players
+FOR EACH ROW
+BEGIN
+    IF NEW.age < 1 OR NEW.age > 100 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid age: must be between 1 and 100.';
+    END IF;
+
+    IF NEW.username = '' OR NEW.username IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Username cannot be empty.';
+    END IF;
+
+    IF NEW.email NOT REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid email format.';
+    END IF;
+END$$
+
+DELIMITER ;
+
+-- Trigger permettant de vérifier l'âge ainsi que la validité du email lors de la mise à jour d'un joueur
+DELIMITER $$
+
+CREATE TRIGGER before_update_player
+BEFORE UPDATE ON Players
+FOR EACH ROW
+BEGIN
+    IF NEW.age < 1 OR NEW.age > 120 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid age: must be between 1 and 120.';
+    END IF;
+
+    IF NEW.username = '' OR NEW.username IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Username cannot be empty.';
+    END IF;
+
+    IF NEW.email NOT REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid email format.';
+    END IF;
+END$$
+
+DELIMITER ;
+
+
 CREATE TABLE IF NOT EXISTS Decks (
     id_deck INT  AUTO_INCREMENT PRIMARY KEY,
     id_user INT REFERENCES Players(id_player),

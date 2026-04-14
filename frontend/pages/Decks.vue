@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import Deck from '@/components/Decks/Deck.vue'
 import DeckPlaceHolder from '@/components/Decks/DeckPlaceHolder.vue'
 import CreateDeckModal from '@/components/Decks/CreateDeckModal.vue'
@@ -93,6 +93,22 @@ const deleteDeck = async (deckId) => {
     console.error('ERROR deleting deck:', error)
   }
 }
+
+const fetchDecks = async () => {
+  const response = await fetch('http://localhost:5000/api/decks', {
+    credentials: 'include',
+  })
+  if (!response.ok) return
+  const data = await response.json()
+  decks.value = data.map((d) => ({
+    id: d.id,
+    name: d.name,
+    format: d.format,
+    cards: [],
+  }))
+}
+
+onMounted(fetchDecks)
 </script>
 
 <template>

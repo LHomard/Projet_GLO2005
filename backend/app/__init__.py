@@ -5,7 +5,8 @@ from services.ai_judges import judges_bp
 from flask_login import LoginManager, login_user, current_user, login_required
 
 from .Db_queries.color_queries import get_all_colors_logic
-from .Db_queries.deck_queries import create_deck_logic, delete_deck_logic, get_deck_by_id_logic
+from .Db_queries.deck_queries import create_deck_logic, delete_deck_logic, get_deck_by_id_logic, \
+    get_deck_by_user_id_logic
 from .Db_queries.format_queries import get_all_formats_logic
 from .Db_queries.login_queries import check_user_password, get_user_by_id, get_user_by_email, insert_user
 
@@ -25,8 +26,10 @@ def create_app():
     login_manager = LoginManager()
     login_manager.init_app(app)
 
-    _sets_cache = {"data": None, "time": 0}
-    CACHE_TTL = 3600
+    @login_manager.user_loader
+    def load_user(user_id):
+        return get_user_by_id(user_id)
+
 
     @app.route('/api/cards/random')
     def random_card():
@@ -78,11 +81,37 @@ def create_app():
         return jsonify({'error': 'Invalid email or password'}), 403
 
 
-    @app.route('/api/decks/<int:id>')
-    def get_deck_by_user_id(user_id):
-        data = get_deck_by_id_logic(user_id)
+    @app.route('/api/register', methods=['POST'])
+    def register():
+        data = request.get_json(silent=True) or {}
 
-        return jsonify(data)
+        username = (data.get('username') or '').strip()
+        email = (data.get('email') or '').strip()
+        password = data.get('password') or ''
+        age = data.get('age')
+
+        if not username or not email or not password or not age:
+            return jsonify({'error': 'All fields are required.'}), 400
+
+
+        if get_user_by_email(email):
+            return jsonify({'error': 'Email already in use.'}), 409
+
+        try:
+            insert_user(username, email, age, password)
+        except pymysql.err.OperationalError as e:
+            return jsonify({'error': e.args[1]}), 400
+
+        user = get_user_by_email(email)
+        login_user(user)
+
+        return jsonify({'message': 'Account created successfully.'}), 201
+
+
+    @app.route('/api/decks')
+    def get_user_decks():
+        data = get_deck_by_user_id_logic(current_user.id)
+        return jsonify(data), 200
 
 
     @app.route('/api/decks', methods=['POST'])
@@ -132,8 +161,7 @@ def create_app():
 
         return jsonify(data)
 
-
-    @app.route('/api/Colors')
+    @app.route('/api/colors')
     def get_all_colors():
         data = get_all_colors_logic()
 
