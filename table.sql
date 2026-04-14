@@ -188,7 +188,11 @@ DELIMITER ;
 
 
 CREATE TABLE IF NOT EXISTS Ai_chats (
-    id_player INT REFERENCES Players(id_player) ON DELETE CASCADE,
-    chats TEXT
-)
+    id_chat INT AUTO_INCREMENT PRIMARY KEY,
+    id_player INT NOT NULL,
+    title VARCHAR(255) DEFAULT 'New Chat',
+    chats JSON,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_player) REFERENCES Players(id_player) ON DELETE CASCADE
+);
 

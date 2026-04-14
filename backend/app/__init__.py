@@ -4,6 +4,10 @@ from flask_cors import CORS
 from services.ai_judges import judges_bp
 from flask_login import LoginManager, login_user, current_user, login_required
 
+from .Db_queries.ai_queries import get_all_discussion_from_history, delete_chat, get_discussion_from_history
+from .Db_queries.login_queries import check_user_password
+from .Db_queries.card_queries import get_cards_paginated, get_random_card_image, get_card_details_logic, \
+    get_card_image_from_sets
 from .Db_queries.color_queries import get_all_colors_logic
 from .Db_queries.deck_queries import create_deck_logic, delete_deck_logic, get_deck_by_id_logic, \
     get_deck_by_user_id_logic, get_deck_cards_logic, add_card_to_deck_logic
@@ -26,6 +30,9 @@ def create_app():
     login_manager = LoginManager()
     login_manager.init_app(app)
 
+    _sets_cache = {"data": None, "time": 0}
+
+    CACHE_TTL = 3600
     @login_manager.user_loader
     def load_user(user_id):
         return get_user_by_id(user_id)
@@ -210,5 +217,21 @@ def create_app():
 
         return jsonify({'message': 'Card added successfully'}), 201
 
+
+    @app.route('/api/chat/<int:id>', methods=['GET', 'DELETE'])
+    def get_chat_history(id):
+        if request.method == 'GET':
+            data = get_all_discussion_from_history(id)
+            return jsonify(data)
+
+        if request.method == 'DELETE':
+            data = delete_chat(id)
+            return jsonify(data)
+        return None
+
+
+
     return app
+
+
 

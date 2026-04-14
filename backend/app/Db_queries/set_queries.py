@@ -21,7 +21,19 @@ def get_sets_logic():
                 s.set_name AS name,
                 s.release_date,
                 s.icon_url AS icon,
-                s.card_count
+                s.card_count, 
+                (
+                    SELECT REPLACE(cp.image_url, '/normal/', '/art_crop/')
+                    FROM Card_printing cp
+                    JOIN Card_oracle co ON cp.id_oracle = co.id_oracle
+                    WHERE cp.id_set = s.id_set
+                        AND cp.image_url IS NOT NULL
+                        AND co.name NOT LIKE 'A-%%'
+                        AND co.name NOT LIKE '%%//%%'
+                        AND co.type_line NOT LIKE '%%Token%%'
+                        AND co.type_line NOT LIKE '%%Emblem%%'
+                    LIMIT 1
+                ) AS image
             FROM Sets s
             ORDER BY release_date DESC;
         """

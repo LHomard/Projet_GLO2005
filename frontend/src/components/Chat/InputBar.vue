@@ -1,8 +1,8 @@
 <script setup>
   import { ref } from 'vue';
 
-  const props = defineProps(['cards']);
-  const emit = defineEmits(['send']);
+  const props = defineProps(['cards', 'currentChatId', 'playerId', 'history']);
+  const emit = defineEmits(['send', 'updatedChatId']);
   const inputText = ref('');
 
   async function getJudge(prompt) {
@@ -13,14 +13,19 @@
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           message: prompt,
-          cards: props.cards})
+          history: props.history,
+          cards: props.cards,
+          playerId: props.playerId,
+          chatId: props.currentChatId
+          })
       });
       if(!response.ok) {
         throw new Error(`Response Status: ${response.status}`)
       }
 
       const result = await response.json();
-      return result.reply;
+      if (result.chatId) emit('updatedChatId', result.chatId);
+      return result;
 
     } catch (e) {
       console.error(e.message);
@@ -29,8 +34,10 @@
 
   async function submit() {
     if (!inputText.value.trim()) return;
-    const reply = await getJudge(inputText.value);
-    emit('send', inputText.value, reply);
+
+    const result = await getJudge(inputText.value);
+
+    emit('send', inputText.value, result);
     inputText.value = '';
   }
 </script>

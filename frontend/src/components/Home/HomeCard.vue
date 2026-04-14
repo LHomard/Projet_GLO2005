@@ -1,5 +1,7 @@
 <script setup>
-  const props = defineProps({ set: Object })
+  const props = defineProps({
+    set: Object,
+  image: Object})
 </script>
 
 <template>

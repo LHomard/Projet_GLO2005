@@ -3,32 +3,32 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import HomeCard from "@/components/Home/HomeCard.vue"
 
 const sets = ref([])
-const carouselRef = ref(null)
-let animationFrame = null
+const carouselRef = ref(null);
+let animationFrame = null;
 
 const startScrolling = () => {
   if (!carouselRef.value) return
 
 
-  carouselRef.value.scrollLeft += 1
+  carouselRef.value.scrollLeft += 1;
 
   if (carouselRef.value.scrollLeft >= carouselRef.value.scrollWidth / 2) {
-    carouselRef.value.scrollLeft = 0
+    carouselRef.value.scrollLeft = 0;
   }
 
-  animationFrame = requestAnimationFrame(startScrolling)
+  animationFrame = requestAnimationFrame(startScrolling);
 }
 
 onMounted(async () => {
-  const res = await fetch('http://localhost:5000/api/sets')
-  sets.value = await res.json()
-
-  startScrolling()
+  const res = await fetch('http://localhost:5000/api/sets');
+  sets.value = await res.json();
+  startScrolling();
 })
+
 
 onUnmounted(() => {
-  cancelAnimationFrame(animationFrame)
-})
+  cancelAnimationFrame(animationFrame);
+});
 
 
 </script>

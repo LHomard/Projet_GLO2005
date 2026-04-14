@@ -1,7 +1,7 @@
 <script setup>
   import { ref } from "vue";
 
-  const emit = defineEmits(['close', 'select-card']); // Added select-card event
+  defineEmits(['close', 'select-card']);
 
   const searchQuery = ref('');
   const cardInPlay = ref([]);
