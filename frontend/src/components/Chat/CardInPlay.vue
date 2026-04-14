@@ -50,10 +50,11 @@
       </div>
     </div>
 
-    <CardPlaceHolder @open="showModal = true"/>
+    <CardPlaceHolder @open="showModal = true" :text="'Add card in play'" />
 
     <CardInPlayModal
       v-if="showModal"
+      title="Search for card in play"
       @close="showModal = false"
       @select-card="handleCardSelection"
     />

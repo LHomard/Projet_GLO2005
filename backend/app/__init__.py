@@ -10,7 +10,7 @@ from .Db_queries.card_queries import get_cards_paginated, get_random_card_image,
     get_card_image_from_sets
 from .Db_queries.color_queries import get_all_colors_logic
 from .Db_queries.deck_queries import create_deck_logic, delete_deck_logic, get_deck_by_id_logic, \
-    get_deck_by_user_id_logic, get_deck_cards_logic, add_card_to_deck_logic
+    get_deck_by_user_id_logic, get_deck_cards_logic, add_card_to_deck_logic, remove_card_from_deck_logic
 from .Db_queries.format_queries import get_all_formats_logic
 from .Db_queries.login_queries import check_user_password, get_user_by_id, get_user_by_email, insert_user
 
@@ -121,6 +121,7 @@ def create_app():
 
 
     @app.route('/api/decks')
+    @login_required
     def get_user_decks():
         data = get_deck_by_user_id_logic(current_user.id)
         return jsonify(data), 200
@@ -166,6 +167,24 @@ def create_app():
         data = delete_deck_logic(deck_id)
 
         return jsonify(data), 200
+    
+    @app.route('/api/decks/<int:deck_id>/cards/<int:id_printing>', methods=['DELETE'])
+    @login_required
+    def remove_card_from_deck(deck_id, id_printing):
+        deck = get_deck_by_id_logic(deck_id)
+
+        if deck is None:
+            return jsonify({'error': 'Deck not found'}), 404
+
+        if deck['user_id'] != current_user.id:
+            return jsonify({'error': 'Denied access'}), 403
+
+        result = remove_card_from_deck_logic(deck_id, id_printing)
+
+        if result and 'error' in result:
+            return jsonify(result), 400
+
+        return jsonify({'message': 'Card removed successfully'}), 200
 
 
     @app.route('/api/formats')

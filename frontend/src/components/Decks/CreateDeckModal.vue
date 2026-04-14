@@ -1,11 +1,6 @@
 <script setup>
 import { reactive, computed, watch, ref, onMounted } from 'vue'
-import whiteIcon from '@/assets/white.png'
-import blueIcon from '@/assets/blue.png'
-import blackIcon from '@/assets/black.png'
-import redIcon from '@/assets/red.png'
-import greenIcon from '@/assets/green.png'
-import colorlessIcon from '@/assets/colorless.png'
+import { manaIconMap } from '@/utils/mtgIcons'
 
 const props = defineProps({
   open: Boolean,
@@ -19,14 +14,6 @@ const form = reactive({
   commanderColors: [],
 })
 
-const iconMap = {
-  W: whiteIcon,
-  U: blueIcon,
-  B: blackIcon,
-  R: redIcon,
-  G: greenIcon,
-  C: colorlessIcon,
-}
 
 const mtgColors = ref([])
 const formatOptions = ref([])
@@ -36,7 +23,7 @@ const isCommander = computed(() => form.format === 'commander')
 watch(
   () => form.format,
   (newFormat) => {
-    if (newFormat !== 'Commander') {
+    if (newFormat !== 'commander') {
       form.commanderColors = []
     }
   },
@@ -60,7 +47,7 @@ const fetchColors = async () => {
   mtgColors.value = data.map((c) => ({
     label: c.name,
     value: c.symbol,
-    icon: iconMap[c.symbol] ?? null,
+    icon: manaIconMap[c.symbol] ?? null,
   }))
 }
 
