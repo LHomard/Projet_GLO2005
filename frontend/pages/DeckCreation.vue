@@ -163,7 +163,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="p-6 min-h-screen bg-[#09090d] text-white">
+  <div class="p-6 h-full bg-[#09090d] text-white">
     <h1 class="text-2xl font-bold mb-6">Build your deck</h1>
 
     <p v-if="errorMessage" class="mb-4 text-red-400">

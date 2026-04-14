@@ -122,7 +122,7 @@ async function signup() {
 
 <template>
   <section
-    class="h-full min-h-screen bg-black flex items-center justify-center px-6 py-8 overflow-hidden!"
+    class="h-full bg-black flex items-center justify-center px-6 py-8 overflow-hidden!"
   >
     <div class="w-full max-w-md">
       <div class="w-full rounded-lg shadow dark:border bg-gray-800/50 border-gray-800/90 mb-16">
