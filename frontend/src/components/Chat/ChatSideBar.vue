@@ -50,7 +50,7 @@
 </script>
 
 <template>
-  <div class="hidden peer-checked:flex md:flex flex-col w-80 bg-gray-800 transition-all duration-300 ease-in-out h-screen">
+  <div class="hidden peer-checked:flex md:flex flex-col w-80 bg-gray-800 transition-all duration-300 ease-in-out h-full min-h-0">
 			<div class="flex items-center justify-between h-16 bg-gray-900 px-4">
 				<span class="text-white font-bold uppercase">The Oracle</span>
 				<label for="menu-toggle" class="text-white cursor-pointer">
@@ -64,7 +64,7 @@
       <button @click="newChat">
         New Chat
       </button>
-    <nav class="chat flex-1 px-8 py-4 bg-gray-800 overflow-y-scroll">
+    <nav class="chat flex-1 min-h-0 px-8 py-4 bg-gray-800 overflow-y-auto">
 
       <hr class="border-b-black my-3">
 

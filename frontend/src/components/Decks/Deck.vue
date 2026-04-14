@@ -65,7 +65,7 @@ onBeforeUnmount(() => {
   <div
     class="relative self-start max-w-xs bg-gray-900 text-white rounded-xl shadow-lg overflow-hidden border border-white/20 hover:shadow-2xl transition-shadow duration-300"
   >
-    <div class="h-48 w-full bg-gray-800 flex items-center justify-center relative">
+    <div class="py-2 h-48 w-full bg-gray-800 flex items-center justify-center relative">
       <img
         v-if="props.deck.image_url"
         :src="props.deck.image_url"
