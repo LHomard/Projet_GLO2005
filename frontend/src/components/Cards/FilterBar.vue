@@ -3,20 +3,20 @@ import { ref } from 'vue'
 import CustomSelect from '@/components/Cards/CustomSelect.vue'
 
 const sortOptions = [
-  { value: 'name', label: 'Nom' },
-  { value: 'price', label: 'Prix' },
+  { value: 'name', label: 'Name' },
+  { value: 'price', label: 'Price' },
   { value: 'cmc', label: 'CMC' },
-  { value: 'rarity', label: 'Rareté' },
-  { value: 'release_date', label: 'Date' },
+  { value: 'rarity', label: 'Rarity' },
+  { value: 'release_date', label: 'Release Date' },
 ]
 
 const orderOptions = [
-  { value: 'asc', label: 'Croissant' },
-  { value: 'desc', label: 'Décroissant' },
+  { value: 'asc', label: 'Ascending' },
+  { value: 'desc', label: 'Descending' },
 ]
 
 const rarityOptions = [
-  { value: '', label: 'Toutes' },
+  { value: '', label: 'All' },
   { value: 'common', label: 'Common' },
   { value: 'uncommon', label: 'Uncommon' },
   { value: 'rare', label: 'Rare' },
@@ -52,56 +52,59 @@ const resetFilters = () => {
     <Transition name="slide-down">
       <div
         v-if="visible"
-        class="mx-8 mb-6 p-6 bg-white/5 border border-white/10 rounded-2xl backdrop-blur text-white flex flex-wrap gap-4"
+        class="mx-6 py-4 mb-6 bg-white/5 border border-white/10 rounded-2xl backdrop-blur gap-8 text-white flex flex-wrap justify-center items-start"
       >
-        <div class="flex flex-col gap-1">
-          <label class="text-sm text-white/60">Trier par</label>
+        <div class="flex flex-col gap-2 min-w-[180px]">
+          <label class="text-sm text-white/60">Filter By</label>
           <CustomSelect v-model="filters.sort_by" :options="sortOptions" />
         </div>
 
-        <div class="flex flex-col gap-1">
-          <label class="text-sm text-white/60">Ordre</label>
+        <div class="flex flex-col gap-2 min-w-[180px]">
+          <label class="text-sm text-white/60">Order</label>
           <CustomSelect v-model="filters.order" :options="orderOptions" />
         </div>
 
-        <div class="flex flex-col gap-1">
-          <label class="text-sm text-white/60">Rareté</label>
+        <div class="flex flex-col gap-2 min-w-[180px]">
+          <label class="text-sm text-white/60">Rarity</label>
           <CustomSelect v-model="filters.rarity" :options="rarityOptions" />
         </div>
 
-        <div class="flex flex-col gap-1">
-          <label class="text-sm text-white/60">Prix min ($)</label>
+        <div class="flex flex-col gap-2">
+          <label class="text-sm text-white/60">Min Price ($)</label>
           <input
             v-model="filters.min_price"
             type="number"
             placeholder="0"
-            class="bg-white/10 rounded-lg px-3 py-2 text-white w-28"
+            class="bg-white/10 rounded-lg px-3 py-2 text-white w-32"
           />
         </div>
 
-        <div class="flex flex-col gap-1">
-          <label class="text-sm text-white/60">Prix max ($)</label>
+        <div class="flex flex-col gap-2">
+          <label class="text-sm text-white/60">Max Price ($)</label>
           <input
             v-model="filters.max_price"
             type="number"
             placeholder="1000"
-            class="bg-white/10 rounded-lg px-3 py-2 text-white w-28"
+            class="bg-white/10 rounded-lg px-3 py-2 text-white w-32"
           />
         </div>
 
-        <div class="flex items-end gap-2">
-          <button
-            @click="applyFilters"
-            class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 rounded-lg transition"
-          >
-            Appliquer
-          </button>
-          <button
-            @click="resetFilters"
-            class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition"
-          >
-            Réinitialiser
-          </button>
+        <div class="flex flex-col gap-2 min-w-[160px]">
+          <label class="text-sm invisible">Actions</label>
+          <div class="flex gap-6">
+            <button
+              @click="applyFilters"
+              class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 rounded-lg transition"
+            >
+              Apply Filters
+            </button>
+            <button
+              @click="resetFilters"
+              class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition"
+            >
+              Reset Filters
+            </button>
+          </div>
         </div>
       </div>
     </Transition>

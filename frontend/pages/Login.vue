@@ -53,7 +53,7 @@ async function login() {
           <h1 class="text-xl font-bold leading-tight tracking-tight md:text-2xl text-white">
             Log in to your account
           </h1>
-          <form class="space-y-4 md:space-y-6" @submit.prevent="login">
+          <form class="flex flex-col gap-6" @submit.prevent="login">
             <div>
               <label for="email" class="block mb-2 text-sm font-medium text-white">
                 Your email
@@ -85,13 +85,15 @@ async function login() {
             <p v-if="errorMessage" class="text-sm text-red-600">
               {{ errorMessage }}
             </p>
-            <button
+            <div class="flex justify-center mt-4">
+              <button
               :disabled="isLoading"
               type="submit"
-              class="w-full text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800"
-            >
-              Log in
-            </button>
+              class="w-50 text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800"
+              >
+                Log in
+              </button>
+            </div>
             <p class="text-sm font-light text-gray-400">
               Don’t have an account yet?
               <a href="#" class="font-medium text-blue-500"> Sign up </a>
