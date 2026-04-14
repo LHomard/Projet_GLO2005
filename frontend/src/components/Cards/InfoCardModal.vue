@@ -40,15 +40,13 @@ watch(() => props.cardId, fetchCardInfo, { immediate: true })
         <div v-else-if="error" class="text-red-500">{{ error }}</div>
 
         <div v-else-if="cardInfo">
-          <h3 class="text-white text-xl font-bold mb-4">{{ cardInfo.name }}</h3>
-          <div class="flex align-middle">
+          <div class="flex align-middle mb-6 justify-center">
             <img
               :src="cardInfo.image"
               :alt="cardInfo.name"
-              class="w-full rounded-[10px] shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+              class="w-[85%] max-w-[260px] h-auto rounded-[10px] shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
             />
           </div>
-          <hr class="my-4" />
           <div class="card-details">
             <div class="detail-row">
               <span class="label">Mana cost</span>
@@ -80,7 +78,7 @@ watch(() => props.cardId, fetchCardInfo, { immediate: true })
               <span class="label">Artist</span
               ><span class="value">{{ cardInfo.artist ?? '—' }}</span>
             </div>
-            <div class="detail-row">
+            <div class="last-row">
               <span class="label">Price</span
               ><span class="value">{{ cardInfo.price ? `$${cardInfo.price}` : '—' }}</span>
             </div>
@@ -98,12 +96,20 @@ watch(() => props.cardId, fetchCardInfo, { immediate: true })
   border-radius: 20px;
   padding: 2rem;
   backdrop-filter: blur(12px);
+  max-height: 95vh;
+  overflow-y: auto;
 }
 
 .detail-row {
   display: flex;
   justify-content: space-between;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 6px;
+}
+
+.last-row {
+  display: flex;
+  justify-content: space-between;
   padding-bottom: 6px;
 }
 

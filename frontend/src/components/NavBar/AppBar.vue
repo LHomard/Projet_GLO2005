@@ -8,7 +8,7 @@ import {
   MenuItem,
   MenuItems,
 } from '@headlessui/vue'
-import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+import { Bars3Icon, XMarkIcon } from '@heroicons/vue/24/outline'
 import { computed, inject} from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 
@@ -17,10 +17,10 @@ const auth = inject('auth')
 const displayName = computed(() => auth.currentUser.value?.username ?? 'Guest')
 
   const navigation = [
-    { name: 'Home', href: '/', current: true },
-    { name: 'Cards', href: '/cards', current: false },
-    { name: 'Deck building', href: '/decks', current: false },
-    { name: 'The Oracle', href: '/chat', current: false },
+    { name: 'Home', href: '/'},
+    { name: 'Cards', href: '/cards'},
+    { name: 'Deck Building', href: '/decks'},
+    { name: 'The Oracle', href: '/chat'},
   ]
 
 
@@ -46,15 +46,15 @@ async function handleLogout() {
           </DisclosureButton>
         </div>
         <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-          <span class="flex items-center text-white font-bold"> Magie : Le Rassemblement </span>
-          <div class="hidden sm:ml-6 sm:block">
+          <span class="flex items-center text-white font-bold"> Magic : The Gathering </span>
+          <div class="hidden sm:ml-6 sm:block justify-between">
             <div class="flex space-x-4">
               <RouterLink
                 v-for="item in navigation"
                 :key="item.name"
                 :to="item.href"
                 class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white"
-                active-class="bg-gray-950/50 text-white"
+                exact-active-class="bg-gray-950/50 text-white"
               >
                 {{ item.name }}
               </RouterLink>
@@ -64,27 +64,25 @@ async function handleLogout() {
         <div
           class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0"
         >
-          <button
-            type="button"
-            class="relative rounded-full p-1 text-gray-400 hover:text-white focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500"
+          <RouterLink
+            v-if="!auth.isLoggedIn.value"
+            to="/login"
+            class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white"
+            exact-active-class="bg-gray-950/50 text-white"
           >
-            <span class="absolute -inset-1.5"></span>
-            <span class="sr-only">View notifications</span>
-            <BellIcon class="size-6" aria-hidden="true" />
-          </button>
-
+            Log in
+          </RouterLink>
           <!-- Profile dropdown -->
-          <Menu as="div" class="relative ml-3">
+          <Menu v-if="auth.isLoggedIn.value" as="div" class="relative ml-3">
             <MenuButton
               class="relative flex rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
             >
-              <span class="absolute -inset-1.5"></span>
               <span class="sr-only">Open user menu</span>
-              <img
-                class="size-8 rounded-full bg-gray-800 outline -outline-offset-1 outline-white/10"
-                src=""
-                alt=""
-              />
+              <div
+                class="flex px-3 py-1 items-center justify-center rounded-xl bg-indigo-600 text-xs font-semibold text-white outline -outline-offset-1 outline-white/10"
+              >
+                {{ displayName }}
+              </div>
             </MenuButton>
 
             <transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95" enter-to-class="transform scale-100" leave-active-class="transition ease-in duration-75" leave-from-class="transform scale-100" leave-to-class="transform opacity-0 scale-95">
@@ -100,27 +98,6 @@ async function handleLogout() {
                   >
                 </MenuItem>
                 <MenuItem v-slot="{ active }">
-                  <a
-                    href="#"
-                    :class="[
-                      active ? 'bg-white/5 outline-hidden' : '',
-                      'block px-4 py-2 text-sm text-gray-300',
-                    ]"
-                    >Settings</a
-                  >
-                </MenuItem>
-                <MenuItem v-if="!auth.isLoggedIn.value" v-slot="{ active }">
-                  <RouterLink
-                    to="/login"
-                    :class="[
-                      active ? 'bg-white/5 outline-hidden' : '',
-                      'block px-4 py-2 text-sm text-gray-300',
-                    ]"
-                  >
-                    Log in
-                  </RouterLink>
-                </MenuItem>
-                <MenuItem v-if="auth.isLoggedIn.value" v-slot="{ active }">
                   <button
                     type="button"
                     @click="handleLogout"
@@ -135,9 +112,6 @@ async function handleLogout() {
               </MenuItems>
             </transition>
           </Menu>
-          <div class="px-3 py-2 text-sm font-medium text-gray-300">
-            {{ displayName }}
-          </div>
         </div>
       </div>
     </div>

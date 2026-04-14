@@ -1,24 +1,22 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
+import { manaIconMap } from '@/utils/mtgIcons'
 
+const router = useRouter()
 const props = defineProps({ deck: Object })
 const emit = defineEmits(['delete_deck'])
-
-const deckColors = computed(() => {
-  const colorsSet = new Set()
-  props.deck.cards.forEach((card) => {
-    card.colors?.forEach((color) => colorsSet.add(color))
-  })
-  return Array.from(colorsSet)
-})
-
-const totalCards = computed(() => props.deck.cards.length)
 
 const menuOpen = ref(false)
 const toggleMenu = () => (menuOpen.value = !menuOpen.value)
 
 const menuRef = ref()
 const buttonRef = ref()
+
+const formatLabel = (value) => {
+  if (!value) return ''
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
 
 const handleClickOutside = (event) => {
   if (
@@ -32,6 +30,28 @@ const handleClickOutside = (event) => {
   }
 }
 
+const goToEdit = () => {
+  menuOpen.value = false
+  router.push({ name: 'DeckCreate', params: { id: props.deck.id } })
+}
+
+const deleteDeck = () => {
+  menuOpen.value = false
+  emit('delete_deck', props.deck.id)
+}
+
+const formatCreatedAt = (dateString) => {
+  if (!dateString) return ''
+
+  const date = new Date(dateString)
+
+  return date.toLocaleDateString('en-CA', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
 })
@@ -43,12 +63,12 @@ onBeforeUnmount(() => {
 
 <template>
   <div
-    class="relative max-w-xs bg-gray-900 text-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300"
+    class="relative self-start max-w-xs bg-gray-900 text-white rounded-xl shadow-lg overflow-hidden border border-white/20 hover:shadow-2xl transition-shadow duration-300"
   >
     <div class="h-48 w-full bg-gray-800 flex items-center justify-center relative">
       <img
-        v-if="props.deck.cards.length > 0 && props.deck.cards[0].image"
-        :src="props.deck.cards[0].image"
+        v-if="props.deck.image_url"
+        :src="props.deck.image_url"
         alt="Deck Image"
         class="object-contain h-full w-full"
       />
@@ -76,30 +96,48 @@ onBeforeUnmount(() => {
         ref="menuRef"
         class="absolute top-10 right-2 bg-gray-800 border border-gray-700 rounded shadow-lg z-10 w-32"
       >
-        <button class="block w-full text-left px-4 py-2 hover:bg-gray-700">Edit</button>
+        <button
+          class="block w-full text-left px-4 py-2 hover:bg-gray-700"
+          @click="goToEdit"
+        >
+          Edit
+        </button>
+
         <button
           class="block w-full text-left px-4 py-2 hover:bg-red-600"
-          @click="$emit('delete_deck', deck.id)"
+          @click="deleteDeck"
         >
           Delete
         </button>
       </div>
     </div>
 
-    <div class="p-4">
+    <div class="flex flex-col gap-1 px-4 py-2">
       <h2 class="text-lg font-bold mb-2">{{ props.deck.name }}</h2>
 
-      <div class="flex flex-wrap gap-1 mb-2">
-        <span
-          v-for="color in deckColors"
+      <div class="flex items-center gap-1 mb-2">
+        <img
+          v-for="color in props.deck.colors"
           :key="color"
-          class="text-sm px-2 py-1 border border-white rounded-full"
-        >
-          {{ color }}
+          :src="manaIconMap[color]"
+          :alt="color"
+          class="w-5 h-5 object-contain"
+        />
+      </div>
+
+      <div class="mb-2">
+        <span class="text-xs px-2 py-1 rounded-md bg-white/10 border border-white/10 text-white/80">
+          {{ formatLabel(props.deck.format) }}
         </span>
       </div>
 
-      <div class="text-sm text-gray-300">Total Cards: {{ totalCards }}</div>
+      <div class="text-sm text-gray-300">
+        Total Cards: {{ props.deck.card_count }}
+      </div>
+
+      <div v-if="props.deck.created_at" class="mt-1 text-xs text-gray-400">
+        Created: {{ formatCreatedAt(props.deck.created_at) }}
+      </div>
     </div>
   </div>
 </template>

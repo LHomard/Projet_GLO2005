@@ -17,11 +17,34 @@ const username = ref('')
 const age = ref('')
 
 const errorMessage = ref('')
+const successMessage = ref('')
 const isLoading = ref(false)
+
+let messageTimeout = null
+
+function showMessage(type, message, duration) {
+  if (messageTimeout) {
+    clearTimeout(messageTimeout)
+  }
+
+  if (type === 'error') {
+    errorMessage.value = message
+    successMessage.value = ''
+  } else {
+    successMessage.value = message
+    errorMessage.value = ''
+  }
+
+  messageTimeout = setTimeout(() => {
+    errorMessage.value = ''
+    successMessage.value = ''
+  }, duration)
+}
 
 function switchMode(newMode) {
   mode.value = newMode
   errorMessage.value = ''
+  successMessage.value = ''
 }
 
 async function login() {
@@ -39,14 +62,14 @@ async function login() {
     const data = await response.json().catch(() => ({}))
 
     if (!response.ok) {
-      errorMessage.value = data.error || 'Login failed.'
+      showMessage('error', data.error || 'Login failed.', 5000)
       return
     }
 
     auth.login(data.user)
-    await router.push({ name: 'Deck building' })
+    await router.push({ name: 'DeckBuilding' })
   } catch (error) {
-    errorMessage.value = 'Server unavailable.'
+    showMessage('error', 'Server unavailable.', 5000)
     console.error(error)
   } finally {
     isLoading.value = false
@@ -55,6 +78,7 @@ async function login() {
 
 async function signup() {
   errorMessage.value = ''
+  successMessage.value = ''
   isLoading.value = true
 
   const finalGender = gender.value === 'other' ? other_gender.value : gender.value
@@ -78,15 +102,18 @@ async function signup() {
     const data = await response.json().catch(() => ({}))
 
     if (!response.ok) {
-      errorMessage.value = data.error || 'Sign up failed.'
+      showMessage('error', data.error || 'Sign up failed.', 5000)
       return
     }
 
-    auth.login(data.user)
-    await router.push({ name: 'Deck building' })
+    username.value = ''
+    age.value = ''
+    password.value = ''
+    mode.value = 'login'
+    showMessage('success', 'Account created successfully. You can now log in.', 3000)
   } catch (error) {
-    errorMessage.value = 'Server unavailable.'
-    console.error(error)
+    console.error('Signup error:', error)
+    showMessage('error', 'Server unavailable.', 5000)
   } finally {
     isLoading.value = false
   }
@@ -131,7 +158,7 @@ async function signup() {
           </h1>
 
           <!-- LOGIN FORM -->
-          <form v-if="mode === 'login'" class="space-y-4 md:space-y-6" @submit.prevent="login">
+          <form v-if="mode === 'login'" class="flex flex-col gap-6" @submit.prevent="login">
             <div>
               <label for="email" class="block mb-2 text-sm font-medium text-white">
                 Your email
@@ -160,7 +187,13 @@ async function signup() {
                 required
               />
             </div>
-            <p v-if="errorMessage" class="text-sm text-red-400">{{ errorMessage }}</p>
+            <p v-if="errorMessage" class="text-sm text-red-400">
+              {{ errorMessage }}
+            </p>
+
+            <p v-if="successMessage" class="text-sm text-green-400">
+              {{ successMessage }}
+            </p>
             <button
               :disabled="isLoading"
               type="submit"
@@ -274,16 +307,18 @@ async function signup() {
                 required
               />
             </div>
-
-            <p v-if="errorMessage" class="text-sm text-red-400">{{ errorMessage }}</p>
-
-            <button
-              :disabled="isLoading"
-              type="submit"
-              class="w-full text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800 disabled:opacity-50"
-            >
-              {{ isLoading ? 'Creating account...' : 'Create account' }}
-            </button>
+            <p v-if="errorMessage" class="text-sm text-red-400">
+              {{ errorMessage }}
+            </p>
+            <div class="flex justify-center mt-4">
+              <button
+                :disabled="isLoading"
+                type="submit"
+                class="w-50 text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800 disabled:opacity-50"
+              >
+                {{ isLoading ? 'Creating account...' : 'Create account' }}
+              </button>
+            </div>
           </form>
         </div>
       </div>

@@ -90,7 +90,13 @@ const onSearch = (value) => {
     </template>
 
     <template v-else-if="loading">
-      <div v-for="n in 21" :key="n" class="w-64 h-96 rounded-xl bg-white/10 animate-pulse"></div>
+      <div class="grid grid-cols-7 gap-4 mx-8">
+        <div
+          v-for="n in 21"
+          :key="n"
+          class="w-full h-65 rounded-xl bg-white/10 animate-pulse"
+        ></div>
+      </div>
     </template>
 
     <template v-else>

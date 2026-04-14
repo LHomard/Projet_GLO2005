@@ -1,9 +1,13 @@
 <script setup>
+defineEmits(['open'])
+defineProps({
+  text: String,
+})
 </script>
 
 <template>
   <button class="card-placeholder" @click="$emit('open')">
-    Add card in play
+    {{ text }}
   </button>
 </template>
 
