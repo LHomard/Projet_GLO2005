@@ -50,23 +50,18 @@ def get_cards_paginated(page=1, cards_per_page=168, sort_by="name", order="asc",
                 co.id_oracle,
                 co.name,
                 co.type_line,
-                cp.id_printing,
-                MAX(cp.image_url) AS image,
-                GROUP_CONCAT(c.color_symbol ORDER BY c.id_color SEPARATOR '') AS colors
+                MIN(cp.id_printing) AS id_printing,
+                MIN(cp.image_url) AS image,
+                GROUP_CONCAT(DISTINCT c.color_symbol ORDER BY c.id_color SEPARATOR '') AS colors
             FROM Card_oracle co
-            JOIN Card_printing cp
-                ON co.id_oracle = cp.id_oracle
-            LEFT JOIN Card_colors cc
-                ON co.id_oracle = cc.id_oracle
-            LEFT JOIN Colors c
-                ON cc.id_color = c.id_color
+            JOIN Card_printing cp ON co.id_oracle = cp.id_oracle
+            LEFT JOIN Card_colors cc ON co.id_oracle = cc.id_oracle
+            LEFT JOIN Colors c ON cc.id_color = c.id_color
             {where_clause}
             GROUP BY
                 co.id_oracle,
                 co.name,
-                co.type_line,
-                cp.id_printing,
-                cp.image_url
+                co.type_line
             ORDER BY {sort_column} {order_sql}
             LIMIT %s OFFSET %s;
         """
@@ -92,6 +87,8 @@ def get_cards_paginated(page=1, cards_per_page=168, sort_by="name", order="asc",
         "cards": cards,
         "has_more": has_more,
     }
+
+
 
 
 def get_random_card_image():
