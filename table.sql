@@ -104,6 +104,15 @@ CREATE TABLE IF NOT EXISTS Deck_composition (
     PRIMARY KEY (id_deck, id_printing)
 );
 
+CREATE TABLE rules (
+    id          SERIAL PRIMARY KEY,
+    rule_number VARCHAR(20),
+    parent_rule VARCHAR(20),
+    keyword     VARCHAR(100),
+    text        TEXT,
+    example     TEXT
+);
+
 
 -- Trigger permettant de vérifier l'âge ainsi que la validité du email lors de la création d'un player
 DELIMITER $$
