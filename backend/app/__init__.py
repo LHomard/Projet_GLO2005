@@ -6,7 +6,7 @@ from flask_login import LoginManager, login_user, current_user, login_required
 
 from .Db_queries.color_queries import get_all_colors_logic
 from .Db_queries.deck_queries import create_deck_logic, delete_deck_logic, get_deck_by_id_logic, \
-    get_deck_by_user_id_logic
+    get_deck_by_user_id_logic, get_deck_cards_logic, add_card_to_deck_logic
 from .Db_queries.format_queries import get_all_formats_logic
 from .Db_queries.login_queries import check_user_password, get_user_by_id, get_user_by_email, insert_user
 
@@ -155,6 +155,7 @@ def create_app():
 
         return jsonify(data), 200
 
+
     @app.route('/api/formats')
     def get_all_formats():
         data = get_all_formats_logic()
@@ -167,6 +168,47 @@ def create_app():
 
         return jsonify(data)
 
+
+    @app.route('/api/decks/<int:deck_id>/cards', methods=['GET'])
+    @login_required
+    def get_deck_cards(deck_id):
+        deck = get_deck_by_id_logic(deck_id)
+
+        if deck is None:
+            return jsonify({'error': 'Deck not found'}), 404
+
+        if deck['user_id'] != current_user.id:
+            return jsonify({'error': 'Denied access'}), 403
+
+        data = get_deck_cards_logic(deck_id)
+
+        return jsonify(data), 200
+
+
+    @app.route('/api/decks/<int:deck_id>/cards', methods=['POST'])
+    @login_required
+    def add_card_to_deck(deck_id):
+        deck = get_deck_by_id_logic(deck_id)
+
+        if deck is None:
+            return jsonify({'error': 'Deck not found'}), 404
+
+        if deck['user_id'] != current_user.id:
+            return jsonify({'error': 'Denied access'}), 403
+
+        data = request.get_json(silent=True) or {}
+        id_printing = data.get('id_printing')
+        quantity = data.get('quantity', 1)
+
+        if not id_printing:
+            return jsonify({'error': 'id_printing is required'}), 400
+
+        result = add_card_to_deck_logic(deck_id, id_printing, quantity)
+
+        if result and 'error' in result:
+            return jsonify(result), 400
+
+        return jsonify({'message': 'Card added successfully'}), 201
 
     return app
 

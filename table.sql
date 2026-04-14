@@ -141,6 +141,52 @@ CREATE TABLE IF NOT EXISTS Deck_composition (
     PRIMARY KEY (id_deck, id_printing)
 );
 
+-- Trigger called before deck creation to verify its legality
+CREATE TRIGGER before_insert_deck_composition
+BEFORE INSERT ON Deck_composition
+FOR EACH ROW
+BEGIN
+    DECLARE card_status VARCHAR(20);
+    DECLARE format_id INT;
+    DECLARE max_qty INT;
+    DECLARE current_qty INT;
+
+    -- Retrieves deck format
+    SELECT id_format INTO format_id
+    FROM Decks
+    WHERE id_deck = NEW.id_deck;
+
+    -- Verifies deck legality
+    SELECT l.status INTO card_status
+    FROM Legality l
+    JOIN Card_printing cp ON l.id_oracle = cp.id_oracle
+    WHERE cp.id_printing = NEW.id_printing
+    AND l.id_format = format_id;
+
+    IF card_status IS NULL OR card_status != 'Legal' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'This card is not legal in this deck format.';
+    END IF;
+
+    -- Verifies if card quantity is legal
+    SELECT max_card_quantity INTO max_qty
+    FROM Formats
+    WHERE id_format = format_id;
+
+    SELECT COALESCE(quantity, 0) INTO current_qty
+    FROM Deck_composition
+    WHERE id_deck = NEW.id_deck AND id_printing = NEW.id_printing;
+
+    IF max_qty IS NOT NULL AND (current_qty + NEW.quantity) > max_qty THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Card quantity exceeds the format limit.';
+    END IF;
+END$$
+
+DELIMITER ;
+
+
+
 CREATE TABLE IF NOT EXISTS Ai_chats (
     id_player INT REFERENCES Players(id_player) ON DELETE CASCADE,
     chats TEXT
