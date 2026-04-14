@@ -1,44 +1,14 @@
 <script setup>
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import Deck from '@/components/Decks/Deck.vue'
 import DeckPlaceHolder from '@/components/Decks/DeckPlaceHolder.vue'
 import CreateDeckModal from '@/components/Decks/CreateDeckModal.vue'
 
-const showCreateDeckModal = ref(false)
-const decks = ref([])
+const router = useRouter()
 
-//TODO: Retirer les fakes decks quand implementation terminée
-const fakedecks = ref([
-  {
-    name: 'Mono-Red Aggro',
-    cards: [
-      {
-        colors: ['R'],
-        id: '0c780e37-91b1-4fe1-85c9-7007d91209d5',
-        image:
-          'https://cards.scryfall.io/normal/front/0/c/0c780e37-91b1-4fe1-85c9-7007d91209d5.jpg?1681158251',
-        name: 'A-Akki Ronin',
-        type: 'Creature — Goblin Samurai',
-      },
-      {
-        name: 'Ardent Dustspeaker',
-        image:
-          'https://cards.scryfall.io/normal/front/7/9/79b12c44-9537-4863-a678-c982e8714a5a.jpg?1681158267',
-        colors: ['Red'],
-      },
-      {
-        name: 'Counterspell',
-        image:
-          'https://c1.scryfall.com/file/scryfall-cards/normal/front/f/1/f129eafc-b42c-4d39-8044-31888a35f22f.jpg?1562897992',
-        colors: ['Blue'],
-      },
-    ],
-  },
-  {
-    name: 'Empty Deck',
-    cards: [],
-  },
-])
+const showCreateDeckModal = ref(false);
+const decks = ref([]);
 
 const createNewDeck = async (deckData) => {
   try {
@@ -64,14 +34,18 @@ const createNewDeck = async (deckData) => {
 
     const newDeck = await response.json()
 
-    decks.value.push({
-      id: newDeck.id_deck,
-      name: newDeck.nom,
-      format: newDeck.id_format,
-      cards: [],
-    })
+    // decks.value.push({
+    //   id: newDeck.id_deck,
+    //   name: newDeck.nom,
+    //   format: newDeck.id_format,
+    //   cards: [],
+    // })
 
     showCreateDeckModal.value = false
+    await router.push({
+      name: 'DeckCreate',
+      params: { id: newDeck.id_deck },
+    })
   } catch (error) {
     console.error('ERROR while creating new deck:', error)
   }
@@ -101,12 +75,17 @@ const fetchDecks = async () => {
     credentials: 'include',
   })
   if (!response.ok) return
+
   const data = await response.json()
+
   decks.value = data.map((d) => ({
     id: d.id,
     name: d.name,
     format: d.format,
-    cards: [],
+    image_url: d.image_url,
+    colors: d.colors || [],
+    card_count: d.card_count || 0,
+    created_at: d.created_at,
   }))
 }
 
@@ -114,10 +93,10 @@ onMounted(fetchDecks)
 </script>
 
 <template>
-  <div class="p-8">
+  <div class="decks-page p-8">
     <h1 class="text-2xl font-bold text-white mb-6">Your Decks</h1>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-start">
       <DeckPlaceHolder @create="showCreateDeckModal = true" />
       <Deck v-for="deck in decks" :key="deck.name" :deck="deck" @delete_deck="deleteDeck" />
     </div>
@@ -131,7 +110,7 @@ onMounted(fetchDecks)
 </template>
 
 <style scoped>
-div {
+.decks-page {
   background-color: #09090d;
   min-height: 100vh;
 }

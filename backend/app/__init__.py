@@ -10,7 +10,7 @@ from .Db_queries.card_queries import get_cards_paginated, get_random_card_image,
     get_card_image_from_sets
 from .Db_queries.color_queries import get_all_colors_logic
 from .Db_queries.deck_queries import create_deck_logic, delete_deck_logic, get_deck_by_id_logic, \
-    get_deck_by_user_id_logic, get_deck_cards_logic, add_card_to_deck_logic
+    get_deck_by_user_id_logic, get_deck_cards_logic, add_card_to_deck_logic, remove_card_from_deck_logic
 from .Db_queries.format_queries import get_all_formats_logic
 from .Db_queries.login_queries import check_user_password, get_user_by_id, get_user_by_email, insert_user
 
@@ -83,7 +83,14 @@ def create_app():
         if check_user_password(email, password):
             user = get_user_by_email(email)
             login_user(user)
-            return jsonify({'message': 'Login successful'}), 200
+            return jsonify({
+                'message': 'Login successful',
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email
+                }
+            }), 200
 
         return jsonify({'error': 'Invalid email or password'}), 403
 
@@ -96,26 +103,22 @@ def create_app():
         email = (data.get('email') or '').strip()
         password = data.get('password') or ''
         age = data.get('age')
-
-        if not username or not email or not password or not age:
-            return jsonify({'error': 'All fields are required.'}), 400
-
-
-        if get_user_by_email(email):
-            return jsonify({'error': 'Email already in use.'}), 409
+        first_name = data.get('first_name')
+        last_name = data.get('last_name')
+        gender = data.get('gender')
 
         try:
-            insert_user(username, email, age, password)
+            insert_user(username, email, age, password, first_name, last_name, gender)
         except pymysql.err.OperationalError as e:
             return jsonify({'error': e.args[1]}), 400
 
-        user = get_user_by_email(email)
-        login_user(user)
-
-        return jsonify({'message': 'Account created successfully.'}), 201
+        return jsonify({
+            'message': 'Account created successfully.'
+        }), 201
 
 
     @app.route('/api/decks')
+    @login_required
     def get_user_decks():
         data = get_deck_by_user_id_logic(current_user.id)
         return jsonify(data), 200
@@ -161,6 +164,24 @@ def create_app():
         data = delete_deck_logic(deck_id)
 
         return jsonify(data), 200
+    
+    @app.route('/api/decks/<int:deck_id>/cards/<int:id_printing>', methods=['DELETE'])
+    @login_required
+    def remove_card_from_deck(deck_id, id_printing):
+        deck = get_deck_by_id_logic(deck_id)
+
+        if deck is None:
+            return jsonify({'error': 'Deck not found'}), 404
+
+        if deck['user_id'] != current_user.id:
+            return jsonify({'error': 'Denied access'}), 403
+
+        result = remove_card_from_deck_logic(deck_id, id_printing)
+
+        if result and 'error' in result:
+            return jsonify(result), 400
+
+        return jsonify({'message': 'Card removed successfully'}), 200
 
 
     @app.route('/api/formats')

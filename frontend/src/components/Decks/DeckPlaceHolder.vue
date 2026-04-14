@@ -12,7 +12,7 @@ const emit = defineEmits(['create']);
 <style scoped>
 .deck-placeholder {
   width: 20rem;
-  height: 300px;
+  height: 330px;
   border: 2px dotted #555;
   border-radius: 0.75rem;
   display: flex;

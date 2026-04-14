@@ -4,6 +4,7 @@ import Decks from '../pages/Decks.vue'
 import Cards from '../pages/Cards.vue'
 import Chat from '../pages/Chat.vue'
 import Login from '../pages/Login.vue'
+import DeckCreation from '../pages/DeckCreation.vue'
 import { auth } from '@/auth.js'
 
 
@@ -21,9 +22,16 @@ const routes = [
   },
   {
     path: '/decks',
-    name: 'Deck building',
+    name: 'DeckBuilding',
     component: Decks,
     meta: { requiresAuth: true},
+  },
+  {
+    path: '/decks/create/:id',
+    name: 'DeckCreate',
+    component: DeckCreation,
+    meta: { requiresAuth: true },
+    props: true,
   },
   {
     path: '/chat',

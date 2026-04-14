@@ -10,9 +10,57 @@ def get_deck_by_user_id_logic(user_id):
     try:
         with conn.cursor() as cursor:
             cursor.execute("""
-                SELECT id_deck, deck_name, id_format, date_creation
-                FROM Decks
-                WHERE id_user = %s
+                SELECT
+                    d.id_deck,
+                    d.deck_name,
+                    f.format_name,
+                    d.date_creation,
+                    img.image_url,
+                    COALESCE(cnt.card_count, 0) AS card_count,
+                    clr.colors
+                FROM Decks d
+
+                LEFT JOIN Formats f
+                    ON d.id_format = f.id_format
+
+                LEFT JOIN (
+                    SELECT
+                        dc.id_deck,
+                        SUM(dc.quantity) AS card_count
+                    FROM Deck_composition dc
+                    GROUP BY dc.id_deck
+                ) cnt
+                    ON d.id_deck = cnt.id_deck
+
+                LEFT JOIN (
+                    SELECT
+                        dc.id_deck,
+                        MIN(cp.image_url) AS image_url
+                    FROM Deck_composition dc
+                    JOIN Card_printing cp
+                        ON dc.id_printing = cp.id_printing
+                    GROUP BY dc.id_deck
+                ) img
+                    ON d.id_deck = img.id_deck
+
+                LEFT JOIN (
+                    SELECT
+                        dc.id_deck,
+                        GROUP_CONCAT(DISTINCT c.color_symbol ORDER BY c.id_color SEPARATOR ',') AS colors
+                    FROM Deck_composition dc
+                    JOIN Card_printing cp
+                        ON dc.id_printing = cp.id_printing
+                    JOIN Card_oracle co
+                        ON cp.id_oracle = co.id_oracle
+                    LEFT JOIN Card_colors cc
+                        ON co.id_oracle = cc.id_oracle
+                    LEFT JOIN Colors c
+                        ON cc.id_color = c.id_color
+                    GROUP BY dc.id_deck
+                ) clr
+                    ON d.id_deck = clr.id_deck
+
+                WHERE d.id_user = %s
             """, (user_id,))
 
             decks = cursor.fetchall()
@@ -22,7 +70,10 @@ def get_deck_by_user_id_logic(user_id):
                     "id": d[0],
                     "name": d[1],
                     "format": d[2],
-                    "created_at": d[3].isoformat() if d[3] else None
+                    "created_at": d[3].isoformat() if d[3] else None,
+                    "image_url": d[4],
+                    "card_count": d[5] or 0,
+                    "colors": d[6].split(",") if d[6] else [],
                 }
                 for d in decks
             ]
@@ -158,7 +209,7 @@ def get_deck_cards_logic(id_deck):
             get_deck_cards_request = """
                 SELECT 
                     cp.id_printing,
-                    co.card_name,
+                    co.name,
                     cp.image_url,
                     cp.price,
                     cp.rarity,
