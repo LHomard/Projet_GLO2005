@@ -9,30 +9,29 @@ import {
   MenuItems,
 } from '@headlessui/vue'
 import { Bars3Icon, XMarkIcon } from '@heroicons/vue/24/outline'
-import { computed } from 'vue'
+import { computed, inject} from 'vue'
+import { RouterLink, useRouter } from 'vue-router'
 
-const navigation = [
-  { name: 'Home', href: '/'},
-  { name: 'Cards', href: '/cards'},
-  { name: 'Deck building', href: '/decks'},
-  { name: 'Chat', href: '/chat'},
-]
+const router = useRouter()
+const auth = inject('auth')
+const displayName = computed(() => auth.currentUser.value?.username ?? 'Guest')
 
-const userName = 'Jean-Sébastien Berube'
+  const navigation = [
+    { name: 'Home', href: '/', current: true },
+    { name: 'Cards', href: '/cards', current: false },
+    { name: 'Deck building', href: '/decks', current: false },
+    { name: 'The Oracle', href: '/chat', current: false },
+  ]
 
-const userInitials = computed(() => {
-  return userName
-    .trim()
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0].toUpperCase())
-    .join('')
-})
+
+async function handleLogout() {
+  auth.logout()
+  await router.push({ name: 'Home'})
+}
 </script>
 
 <template>
-  <Disclosure as="nav" class="relative z-50 bg-gray-800/50 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/10" v-slot="{ open }">
+  <Disclosure as="nav" class="relative bg-gray-800/50 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/10" v-slot="{ open }">
     <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
       <div class="relative flex h-16 items-center justify-between">
         <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
@@ -73,15 +72,15 @@ const userInitials = computed(() => {
             Log in
           </RouterLink>
           <!-- Profile dropdown -->
-          <Menu as="div" class="relative ml-3">
+          <Menu v-if="auth.isLoggedIn.value" as="div" class="relative ml-3">
             <MenuButton
               class="relative flex rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
             >
               <span class="sr-only">Open user menu</span>
               <div
-                class="flex size-8 items-center justify-center rounded-full bg-indigo-600 text-xs font-semibold text-white outline -outline-offset-1 outline-white/10"
+                class="flex size-8 items-center justify-center rounded-xl bg-indigo-600 text-xs font-semibold text-white outline -outline-offset-1 outline-white/10"
               >
-                {{ userInitials }}
+                {{ displayName }}
               </div>
             </MenuButton>
 
@@ -98,21 +97,23 @@ const userInitials = computed(() => {
                   >
                 </MenuItem>
                 <MenuItem v-slot="{ active }">
-                  <a
-                    href="#"
+                  <button
+                    type="button"
+                    @click="handleLogout"
                     :class="[
                       active ? 'bg-white/5 outline-hidden' : '',
-                      'block px-4 py-2 text-sm text-gray-300',
+                      'block w-full px-4 py-2 text-left text-sm text-gray-300',
                     ]"
-                    >Settings</a
                   >
-                </MenuItem>
-                <MenuItem v-slot="{ active }">
-                  <a href="#" :class="[active ? 'bg-white/5 outline-hidden' : '', 'block px-4 py-2 text-sm text-gray-300']">Log out</a>
+                    Log out
+                  </button>
                 </MenuItem>
               </MenuItems>
             </transition>
           </Menu>
+          <div class="px-3 py-2 text-sm font-medium text-gray-300">
+            {{ displayName }}
+          </div>
         </div>
       </div>
     </div>

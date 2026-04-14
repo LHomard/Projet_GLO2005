@@ -1,5 +1,4 @@
 <script setup>
-const emit = defineEmits(['open']);
 </script>
 
 <template>

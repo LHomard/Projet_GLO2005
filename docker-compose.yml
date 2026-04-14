@@ -30,6 +30,7 @@ services:
         - DB_USER=user
         - DB_PASSWORD=1234
         - DB_NAME=MGT_db
+        - GROQ_API_KEY=${GROQ_API_KEY}
       depends_on:
         - db
       command: >

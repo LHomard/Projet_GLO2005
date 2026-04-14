@@ -50,23 +50,18 @@ def get_cards_paginated(page=1, cards_per_page=168, sort_by="name", order="asc",
                 co.id_oracle,
                 co.name,
                 co.type_line,
-                cp.id_printing,
-                MAX(cp.image_url) AS image,
-                GROUP_CONCAT(c.color_symbol ORDER BY c.id_color SEPARATOR '') AS colors
+                MIN(cp.id_printing) AS id_printing,
+                MIN(cp.image_url) AS image,
+                GROUP_CONCAT(DISTINCT c.color_symbol ORDER BY c.id_color SEPARATOR '') AS colors
             FROM Card_oracle co
-            JOIN Card_printing cp
-                ON co.id_oracle = cp.id_oracle
-            LEFT JOIN Card_colors cc
-                ON co.id_oracle = cc.id_oracle
-            LEFT JOIN Colors c
-                ON cc.id_color = c.id_color
+            JOIN Card_printing cp ON co.id_oracle = cp.id_oracle
+            LEFT JOIN Card_colors cc ON co.id_oracle = cc.id_oracle
+            LEFT JOIN Colors c ON cc.id_color = c.id_color
             {where_clause}
             GROUP BY
                 co.id_oracle,
                 co.name,
-                co.type_line,
-                cp.id_printing,
-                cp.image_url
+                co.type_line
             ORDER BY {sort_column} {order_sql}
             LIMIT %s OFFSET %s;
         """
@@ -92,6 +87,8 @@ def get_cards_paginated(page=1, cards_per_page=168, sort_by="name", order="asc",
         "cards": cards,
         "has_more": has_more,
     }
+
+
 
 
 def get_random_card_image():
@@ -121,6 +118,51 @@ def get_random_card_image():
         return {
             'image': card['image']
         }
+
+
+def get_card_oracle_text(card_name):
+    conn = get_db()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+
+    try:
+        query = """
+            SELECT 
+                co.name,
+                co.oracle_text,
+                co.type_line,
+                co.mana_cost,
+                co.power,
+                co.toughness,
+                cp.image_url
+            FROM Card_oracle co
+            JOIN Card_printing cp ON cp.id_oracle = co.id_oracle
+            WHERE co.name LIKE %s AND
+                cp.image_url IS NOT NULL
+            LIMIT 3;
+        """
+        cursor.execute(query, (f"%{card_name}%",))
+        results = cursor.fetchall()
+
+        # CAS 1 : Match Exact
+        exact_match = next((r for r in results if r['name'].lower() == card_name.lower()), None)
+        if exact_match:
+            return {"status": "exact", "card": exact_match}
+
+        # CAS 2 : Une seule carte trouvée
+        if len(results) == 1:
+            return {"status": "exact", "card": results[0]}
+
+        # CAS 3 : Plusieurs carte
+        if len(results) > 1:
+            return {"status": "ambiguous", "names": [r['name'] for r in results]}
+
+        return {"status": "not_found"}
+
+    finally:
+        cursor.close()
+        conn.close()
+
+    return card
 
 def get_card_details_logic(id_printing):
     conn = get_db()
@@ -156,4 +198,35 @@ def get_card_details_logic(id_printing):
 
     return {
         'cardDetail': cardDetail
+    }
+
+def get_card_image_from_sets(id_set):
+    conn = get_db()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+
+    try:
+        query = """
+                SELECT cp.image_url AS image
+                FROM Card_printing cp
+                JOIN Card_oracle co ON cp.id_oracle = co.id_oracle
+                JOIN Sets s ON s.id_set = cp.id_set
+                WHERE cp.image_url IS NOT NULL
+                    AND co.name NOT LIKE 'A-%%'
+                    AND co.name NOT LIKE '%%//%%'
+                    AND co.type_line NOT LIKE '%%Token%%'
+                    AND co.type_line NOT LIKE '%%Emblem%%'
+                    AND s.set_code = %s
+                ORDER BY RAND()
+                LIMIT 1;
+                """
+
+        cursor.execute(query, (id_set, ))
+        card = cursor.fetchone()
+
+    finally:
+        cursor.close()
+        conn.close()
+
+    return {
+        'image': card['image'] if card else None
     }

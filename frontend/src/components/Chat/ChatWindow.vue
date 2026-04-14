@@ -1,31 +1,57 @@
 <script setup>
-import { ref } from 'vue'
+  import { ref } from 'vue'
 
-import InputBar from "@/components/Chat/InputBar.vue";
-import UserBubble from "@/components/Chat/UserBubble.vue";
-import AIBubble from "@/components/Chat/AIBubble.vue";
-import CardInPlay from "@/components/Chat/CardInPlay.vue";
+  import InputBar from "@/components/Chat/InputBar.vue";
+  import UserBubble from "@/components/Chat/UserBubble.vue";
+  import AIBubble from "@/components/Chat/AIBubble.vue";
+  import CardInPlay from "@/components/Chat/CardInPlay.vue";
+  import ChatSideBar from "@/components/Chat/ChatSideBar.vue";
 
-const messages = ref([]);
-const selectedCards = ref([]);
+  const messages = ref([]);
+  const selectedCards = ref([]);
+  const cardInPlayRef = ref(null);
+  const currentChatId = ref(null);
 
-function handleSend(text, reply) {
-  messages.value.push({ role: 'user', text, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) });
-  if (reply) {
-    messages.value.push({ role: 'ai', text: reply, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})});
+  function handleSend(text, responseData) {
+    messages.value.push({ role: 'user', text, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) });
+    if (responseData) {
+      messages.value.push({ role: 'ai', text: responseData.reply, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})});
+
+      if (responseData.chatId) {
+        currentChatId.value = responseData.chatId;
+      }
+
+      if (responseData.new_cards?.length > 0) {
+        responseData.new_cards.forEach(card => {
+          cardInPlayRef.value?.addCardFromAI(card);
+        });
+      }
+    }
   }
-}
 
-const updateCards = (cards) => {
-  selectedCards.value = cards;
-};
+  function onSelectChat({chatId, history}){
+    currentChatId.value = chatId
+    messages.value = history.map(msg => ({
+      ...msg, time: ''
+    }))
+  }
+
+  function resetChat() {
+    messages.value = [];
+    currentChatId.value = null;
+  }
+
+  const updateCards = (cards) => {
+    selectedCards.value = cards;
+  };
 
 </script>
 
 <template>
   <div class="flex">
+
     <div class="py-3 px-3 flex-col">
-      <CardInPlay @update-cards="updateCards" />
+      <CardInPlay ref="cardInPlayRef" @update-cards="updateCards" />
     </div>
     <div class="flex flex-col flex-1 h-screen pt-1">
       <div class="fix flex-1 overflow-y-auto px-50 py-4 space-y-3">
@@ -36,8 +62,22 @@ const updateCards = (cards) => {
       </div>
 
       <div class="px-4 pb-4">
-        <InputBar @send="handleSend" :cards="selectedCards" />
+        <InputBar
+          :currentChatId="currentChatId"
+          :playerId="1"
+          :cards="selectedCards"
+          :history="messages"
+          @send="handleSend"
+        />
       </div>
+    </div>
+
+    <div>
+      <ChatSideBar
+        :playerId="1"
+        @newChat="resetChat"
+        @getSelectedChat="onSelectChat"
+      />
     </div>
   </div>
 </template>
