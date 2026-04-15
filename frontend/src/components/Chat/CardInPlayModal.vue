@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import CardFilters from '@/components/Cards/CardFilter.vue'
+import FilterBar from '@/components/Cards/FilterBar.vue'
 
 const props = defineProps({
   title: {
@@ -94,6 +94,7 @@ const onCardClick = (card) => {
 const confirmAddCard = () => {
   if (!selectedCard.value) return
   emit('add-card', selectedCard.value)
+  emit('close')
 }
 
 const applyFilters = async (filters) => {
@@ -143,12 +144,7 @@ const resetFilters = async () => {
         </button>
       </div>
 
-      <CardFilters
-        v-if="filters"
-        :visible="showFilters"
-        @apply="applyFilters"
-        @reset="resetFilters"
-      />
+      <FilterBar :visible="showFilters" @apply="applyFilters" @reset="resetFilters" />
 
       <div class="p-6 pt-2 overflow-y-auto custom-scrollbar">
         <div v-if="cardInPlay.length > 0" class="grid grid-cols-2 sm:grid-cols-3 gap-4">

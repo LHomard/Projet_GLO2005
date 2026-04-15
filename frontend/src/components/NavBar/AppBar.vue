@@ -88,16 +88,6 @@ async function handleLogout() {
             <transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95" enter-to-class="transform scale-100" leave-active-class="transition ease-in duration-75" leave-from-class="transform scale-100" leave-to-class="transform opacity-0 scale-95">
               <MenuItems class="absolute right-0 z-50 mt-2 w-48 origin-top-right rounded-md bg-gray-800 py-1 outline -outline-offset-1 outline-white/10">
                 <MenuItem v-slot="{ active }">
-                  <a
-                    href="#"
-                    :class="[
-                      active ? 'bg-white/5 outline-hidden' : '',
-                      'block px-4 py-2 text-sm text-gray-300',
-                    ]"
-                    >Your profile</a
-                  >
-                </MenuItem>
-                <MenuItem v-slot="{ active }">
                   <button
                     type="button"
                     @click="handleLogout"

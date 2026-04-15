@@ -194,13 +194,15 @@ async function signup() {
             <p v-if="successMessage" class="text-sm text-green-400">
               {{ successMessage }}
             </p>
-            <button
-              :disabled="isLoading"
-              type="submit"
-              class="w-full text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800 disabled:opacity-50"
-            >
-              {{ isLoading ? 'Logging in...' : 'Log in' }}
-            </button>
+            <div class="flex justify-center">
+              <button
+                :disabled="isLoading"
+                type="submit"
+                class="w-50 text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800 disabled:opacity-50"
+              >
+                {{ isLoading ? 'Logging in...' : 'Log in' }}
+              </button>
+            </div>
           </form>
 
           <!-- SIGNUP FORM -->
