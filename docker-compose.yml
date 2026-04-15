@@ -31,6 +31,7 @@ services:
         - DB_PASSWORD=1234
         - DB_NAME=MGT_db
         - GROQ_API_KEY=${GROQ_API_KEY}
+        - PYTHONPATH=/app
       depends_on:
         - db
       command: >

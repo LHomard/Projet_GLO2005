@@ -2,29 +2,23 @@ import os
 import time
 from datetime import date
 
+
 import ijson
 import pymysql
 import requests
 from dotenv import load_dotenv
 
-
 load_dotenv()
-
-print("HOST =", os.getenv("DB_HOST"))
-print("PORT =", os.getenv("DB_PORT"))
-print("USER =", os.getenv("DB_USER"))
-print("PASSWORD =", os.getenv("DB_PASSWORD"))
-print("DB =", os.getenv("DB_NAME"))
 
 
 while True:
     try:
         conn = pymysql.connect(
-            host="db",
-            user="user",
-            password="1234",
-            database="MGT_db",
-            port=3306
+            host=os.getenv("DB_HOST"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            database=os.getenv("DB_NAME"),
+            port=int(os.getenv("DB_PORT", 3306))
         )
         print("Connected to MySQL!")
         conn.close()
@@ -421,6 +415,10 @@ def run_full_population():
     populate_card_printing(default_data)
 
     populate_players_table()
+
+    from app.Db_queries.csv.csv_to_db import import_rules
+
+    import_rules()
 
 if __name__ == "__main__":
     run_full_population()
