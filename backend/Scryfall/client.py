@@ -51,7 +51,7 @@ def getRules() -> dict:
     try:
         items = next(
             item for item in scryfall['data']
-            if item['type'] == 'rules'
+            if item['type'] == 'rulings'
         )
     except StopIteration:
         raise ValueError("rules  n'a pas été trouvé")

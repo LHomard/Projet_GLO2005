@@ -1,5 +1,5 @@
 <script setup>
-  import { ref } from 'vue'
+import {ref, inject, computed} from 'vue'
 
   import InputBar from "@/components/Chat/InputBar.vue";
   import UserBubble from "@/components/Chat/UserBubble.vue";
@@ -11,6 +11,10 @@
   const selectedCards = ref([]);
   const cardInPlayRef = ref(null);
   const currentChatId = ref(null);
+
+  const auth = inject('auth')
+  const playerId = computed(() => auth.currentUser.value?.id)
+
 
   function handleSend(text, responseData) {
     messages.value.push({ role: 'user', text, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) });
@@ -45,16 +49,18 @@
     selectedCards.value = cards;
   };
 
+  console.log(playerId);
+
 </script>
 
 <template>
-  <div class="flex">
+  <div class="flex h-full min-h-0">
 
     <div class="py-3 px-3 flex-col">
       <CardInPlay ref="cardInPlayRef" @update-cards="updateCards" />
     </div>
-    <div class="flex flex-col flex-1 h-screen pt-1">
-      <div class="fix flex-1 overflow-y-auto px-50 py-4 space-y-3">
+    <div class="flex flex-col flex-1 min-h-0 pt-1">
+      <div class="fix flex-1 min-h-0 overflow-y-auto px-50 py-4 space-y-3">
         <template v-for="(msg, i) in messages" :key="i">
           <UserBubble v-if="msg.role === 'user'" :text="msg.text" :time="msg.time" />
           <AIBubble v-else :text="msg.text" :time="msg.time" />
@@ -64,7 +70,7 @@
       <div class="px-4 pb-4">
         <InputBar
           :currentChatId="currentChatId"
-          :playerId="1"
+          :playerId="playerId"
           :cards="selectedCards"
           :history="messages"
           @send="handleSend"
@@ -74,7 +80,7 @@
 
     <div>
       <ChatSideBar
-        :playerId="1"
+        :playerId="playerId"
         @newChat="resetChat"
         @getSelectedChat="onSelectChat"
       />

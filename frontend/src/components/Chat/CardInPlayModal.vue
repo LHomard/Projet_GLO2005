@@ -28,14 +28,6 @@ const cardInPlay = ref([])
 const selectedCard = ref(null)
 const showFilters = ref(false)
 
-const appliedFilters = ref({
-  sort_by: 'name',
-  order: 'asc',
-  rarity: '',
-  min_price: '',
-  max_price: '',
-})
-
 async function getData() {
   if (!searchQuery.value.trim()) {
     cardInPlay.value = []
@@ -44,19 +36,8 @@ async function getData() {
   }
 
   const params = new URLSearchParams({
-    search: searchQuery.value,
-    sort_by: appliedFilters.value.sort_by,
-    order: appliedFilters.value.order,
-    rarity: appliedFilters.value.rarity,
+    search: searchQuery.value
   })
-
-  if (appliedFilters.value.min_price !== '') {
-    params.append('min_price', appliedFilters.value.min_price)
-  }
-
-  if (appliedFilters.value.max_price !== '') {
-    params.append('max_price', appliedFilters.value.max_price)
-  }
 
   const url = `http://localhost:5000/api/cards?${params.toString()}`
 
@@ -94,22 +75,6 @@ const onCardClick = (card) => {
 const confirmAddCard = () => {
   if (!selectedCard.value) return
   emit('add-card', selectedCard.value)
-}
-
-const applyFilters = async (filters) => {
-  appliedFilters.value = { ...filters }
-  await getData()
-}
-
-const resetFilters = async () => {
-  appliedFilters.value = {
-    sort_by: 'name',
-    order: 'asc',
-    rarity: '',
-    min_price: '',
-    max_price: '',
-  }
-  await getData()
 }
 </script>
 

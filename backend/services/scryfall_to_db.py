@@ -77,8 +77,8 @@ def populate_card_oracle(cards):
 
             sql = """
                 INSERT INTO Card_oracle
-                (name, mana_cost, cmc, oracle_text, power, toughness, type_line)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                (name, mana_cost, cmc, oracle_text, power, toughness, type_line, rulings_uri)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """
 
             batch = []
@@ -93,7 +93,8 @@ def populate_card_oracle(cards):
                     card.get("oracle_text"),
                     card.get("power"),
                     card.get("toughness"),
-                    card.get("type_line")
+                    card.get("type_line"),
+                    card.get("rulings_uri")
                 ))
 
                 if len(batch) >= batch_size:

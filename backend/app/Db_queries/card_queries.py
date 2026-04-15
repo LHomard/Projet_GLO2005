@@ -135,6 +135,7 @@ def get_card_oracle_text(card_name):
                 co.type_line,
                 co.mana_cost,
                 co.power,
+                co.id_oracle,
                 co.toughness,
                 cp.image_url
             FROM Card_oracle co
