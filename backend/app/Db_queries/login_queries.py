@@ -11,13 +11,15 @@ class User(UserMixin):
         self.username = username
         self.email = email
 
-
+# Fonction permettant de chiffrer un mot de passe
 def hash_password(password):
     return sha256_crypt.hash(password)
 
+# Fonction permettant de vérifier si un mot de passe correspond à son hachâge
 def verify_password(plain_password, hashed_password):
     return sha256_crypt.verify(plain_password, hashed_password)
 
+# Fonction permettant d'ajouter un utilisateur dans la BD
 def insert_user(username, email, age, password, first_name, last_name, gender):
     hashed_password = hash_password(password)
     connection = get_db()
@@ -31,6 +33,7 @@ def insert_user(username, email, age, password, first_name, last_name, gender):
     finally:
         connection.close()
 
+# Fonction permettant de vérifier si la combinaison email/password passée en paramètre existe dans la BD
 def check_user_password(email, password):
     connection = get_db()
     try:
@@ -48,7 +51,7 @@ def check_user_password(email, password):
     finally:
         connection.close()
 
-
+# Fonction permettant d'obtenir le id, le username et le email d'un utilisateur à partir d'un email
 def get_user_by_email(email):
     connection = get_db()
     try:
@@ -64,6 +67,7 @@ def get_user_by_email(email):
     finally:
         connection.close()
 
+# Fonction permettant d'obtenir le id, le username et le email d'un utilisateur à partir d'un id
 def get_user_by_id(user_id):
     connection = get_db()
     try:

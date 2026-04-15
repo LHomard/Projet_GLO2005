@@ -113,6 +113,12 @@ CREATE TABLE rules (
     example     TEXT
 );
 
+-- Index permettant d'accélérer les requêtes fréquentes
+CREATE INDEX idx_decks_users ON Decks(id_user);
+CREATE INDEX idx_ai_chats_player ON Ai_chats(id_player);
+CREATE INDEX idx_card_printing_oracle ON Card_printing(id_oracle);
+CREATE INDEX idx_card_printing_set ON Card_printing(id_set);
+CREATE INDEX idx_card_printing_rarity_price ON Card_printing(rarity, price);
 
 -- Trigger permettant de vérifier l'âge ainsi que la validité du email lors de la création d'un player
 DELIMITER $$
