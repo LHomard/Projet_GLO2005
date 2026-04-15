@@ -1,5 +1,5 @@
 <script setup>
-  import { ref } from 'vue'
+import {ref, inject, computed} from 'vue'
 
   import InputBar from "@/components/Chat/InputBar.vue";
   import UserBubble from "@/components/Chat/UserBubble.vue";
@@ -11,6 +11,10 @@
   const selectedCards = ref([]);
   const cardInPlayRef = ref(null);
   const currentChatId = ref(null);
+
+  const auth = inject('auth')
+  const playerId = computed(() => auth.currentUser.value?.id)
+
 
   function handleSend(text, responseData) {
     messages.value.push({ role: 'user', text, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) });
@@ -45,6 +49,8 @@
     selectedCards.value = cards;
   };
 
+  console.log(playerId);
+
 </script>
 
 <template>
@@ -64,7 +70,7 @@
       <div class="px-4 pb-4">
         <InputBar
           :currentChatId="currentChatId"
-          :playerId="1"
+          :playerId="playerId"
           :cards="selectedCards"
           :history="messages"
           @send="handleSend"
@@ -74,7 +80,7 @@
 
     <div>
       <ChatSideBar
-        :playerId="1"
+        :playerId="playerId"
         @newChat="resetChat"
         @getSelectedChat="onSelectChat"
       />
